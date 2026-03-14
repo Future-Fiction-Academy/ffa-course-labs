@@ -1,0 +1,157 @@
+<style>
+    :root {
+        --discord-blurple: #5865F2;
+        --discord-dark: #23272A;
+        --discord-glow: rgba(88, 101, 242, 0.35);
+        --text-main: #111827;
+        --text-muted: #6b7280;
+        --border-color: #e5e7eb;
+        --bg-white: #FFFFFF;
+        --transition: all 0.2s ease;
+    }
+
+    .ffa-discord-card {
+        font-family: 'Inter', -apple-system, system-ui, sans-serif;
+        background-color: var(--bg-white);
+        max-width: 460px;
+        margin: 20px auto;
+        padding: 28px;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 12px 25px -16px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .discord-header h3 {
+        margin: 0 0 10px 0;
+        color: var(--text-main);
+        font-size: 1.3rem;
+        font-weight: 800;
+    }
+
+    .discord-header p {
+        margin: 0 0 20px 0;
+        color: var(--text-muted);
+        font-size: 0.96rem;
+        line-height: 1.5;
+    }
+
+    .invite-display {
+        background: #f8faff;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px dashed #c7d2fe;
+        font-family: monospace;
+        font-size: 0.95rem;
+        color: #4338ca;
+        margin-bottom: 18px;
+        display: block;
+        word-break: break-all;
+    }
+
+    .btn-join-discord {
+        background: linear-gradient(135deg, #7289da 0%, var(--discord-blurple) 45%, #4752c4 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        padding: 13px 18px;
+        width: 100%;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 10px 18px -10px var(--discord-glow);
+    }
+
+    .btn-join-discord:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px -12px var(--discord-glow);
+        filter: brightness(1.04);
+    }
+
+    .btn-join-discord:active {
+        transform: translateY(0);
+        filter: brightness(0.98);
+    }
+
+    .btn-copy-link {
+        margin-top: 10px;
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: #f3f4f6;
+        color: var(--discord-dark);
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-copy-link:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-copy-link.success {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+    }
+
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+
+    .success {
+        animation: pop 0.25s ease-in-out;
+    }
+</style>
+
+<div class="ffa-discord-card">
+    <div class="discord-header">
+        <h3>Join the Discord Server</h3>
+        <p>Connect with the community, ask questions, and stay in the loop.</p>
+    </div>
+
+    <div class="invite-display" id="discord-link">https://discord.gg/cJMgZkRtBs</div>
+
+    <a
+        href="https://discord.gg/cJMgZkRtBs"
+        class="btn-join-discord"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
+        Join Discord Server
+    </a>
+
+    <button class="btn-copy-link" id="copy-discord-btn" onclick="copyDiscordInvite()">
+        Copy Invite Link
+    </button>
+</div>
+
+<script>
+    function copyDiscordInvite() {
+        const inviteLink = document.getElementById('discord-link').innerText;
+        const button = document.getElementById('copy-discord-btn');
+
+        navigator.clipboard.writeText(inviteLink).then(() => {
+            const originalText = button.innerText;
+            button.innerText = 'Copied!';
+            button.classList.add('success');
+
+            setTimeout(() => {
+                button.innerText = originalText;
+                button.classList.remove('success');
+            }, 2000);
+        }).catch((err) => {
+            console.error('Failed to copy invite link:', err);
+        });
+    }
+</script>
