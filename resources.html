@@ -1,0 +1,182 @@
+<style>
+    :root {
+        --primary-brand: #3f51b5; 
+        --accent-brand: #ff9800;  
+        --bg-white: #FFFFFF;
+        --card-bg: #ffffff;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --transition: all 0.25s ease;
+    }
+
+    .ffa-wrapper {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: var(--bg-white); /* Updated to #FFFFFF */
+        padding: 25px;
+        max-width: 1100px;
+        margin: 0 auto;
+        border-radius: 12px;
+    }
+
+    .resource-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .app-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border: 1px solid #e2e8f0; /* Keeping border so cards are visible on white */
+        transition: var(--transition);
+        text-decoration: none;
+        height: 100%;
+    }
+
+    .app-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-brand);
+    }
+
+    .app-image-container {
+        width: 100%;
+        height: 160px;
+        background-color: #f8fafc; /* Slightly off-white for the image box to create contrast */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .app-image-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain; 
+    }
+
+    .placeholder-icon {
+        font-size: 48px;
+        font-weight: 800;
+        color: #cbd5e1;
+    }
+
+    .app-info {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: space-between;
+    }
+
+    .app-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+    }
+
+    .app-desc {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+
+    .btn-access {
+        display: block;
+        text-align: center;
+        padding: 10px 15px;
+        background-color: var(--primary-brand);
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+
+    .app-card:hover .btn-access {
+        background-color: var(--accent-brand);
+    }
+
+    @media (max-width: 900px) {
+        .resource-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+        .resource-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="ffa-wrapper">
+    <div class="resource-grid" id="resource-list"></div>
+</div>
+
+<script>
+    const resources = [
+        {
+            title: 'Course Notes',
+            desc: 'Quick access to guides and AI cheat sheets to streamline your writing process.',
+            img: '', 
+            url: '#' 
+        },
+        {
+            title: 'RaptorWrite',
+            desc: 'Our specialized high-speed AI interface designed for prose generation.',
+            img: 'https://www.raptorwrite.com/static/wizard.png', 
+            url: 'https://www.raptorwrite.com'
+        },
+        {
+            title: 'YourFirstDraft',
+            desc: 'Go from a blank page to a complete manuscript with guided AI assistance.',
+            img: 'https://chammie.yourfirstdraft.ai/favicon.ico',
+            url: 'https://www.yourfirstdraft.ai'
+        },
+        {
+            title: 'FFA YouTube',
+            desc: 'Watch the latest AI writing tutorials and masterclass replays on our channel.',
+            img: 'https://yt3.googleusercontent.com/OUbDiJhy7qxJJuAWXKiX7PbfbteV6BV_JYDs55LxXdWoF4HooH6EHwdoO8Ql9xdEjBN67FVaCcE=s160-c-k-c0x00ffffff-no-rj',
+            url: 'https://www.youtube.com/@FutureFictionAcademy'
+        },
+        {
+            title: 'Bespoke Tools',
+            desc: 'Custom software built exclusively for members to enhance their AI workflows.',
+            img: '',
+            url: '#'
+        }
+    ];
+
+    const container = document.getElementById('resource-list');
+
+    resources.forEach(item => {
+        const card = document.createElement('a');
+        card.href = item.url;
+        card.target = "_blank";
+        card.className = 'app-card';
+
+        const imageContent = item.img 
+            ? `<img src="${item.img}" alt="${item.title}">`
+            : `<span class="placeholder-icon">${item.title.charAt(0)}</span>`;
+
+        card.innerHTML = `
+            <div class="app-image-container">${imageContent}</div>
+            <div class="app-info">
+                <div>
+                    <h2 class="app-title">${item.title}</h2>
+                    <p class="app-desc">${item.desc}</p>
+                </div>
+                <div class="btn-access">Launch Application</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+</script>
