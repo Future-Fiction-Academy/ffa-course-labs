@@ -1,0 +1,240 @@
+<div id="tokenizer-demo"></div>
+
+<script type="module">
+  import { encodingForModel } from "https://esm.sh/js-tiktoken";
+
+  const root = document.getElementById("tokenizer-demo");
+
+  root.innerHTML = `
+    <style>
+      #tokenizer-demo {
+        font-family: Arial, Helvetica, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        color: #222;
+      }
+
+      #tokenizer-demo .tk-wrap {
+        border: 1px solid #ddd;
+        border-radius: 14px;
+        padding: 18px;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      }
+
+      #tokenizer-demo .tk-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      #tokenizer-demo .tk-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 14px 16px;
+        font-size: 18px;
+        line-height: 1.4;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        outline: none;
+      }
+
+      #tokenizer-demo .tk-input:focus {
+        border-color: #666;
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+      }
+
+      #tokenizer-demo .tk-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        margin-top: 12px;
+        font-size: 14px;
+        color: #555;
+      }
+
+      #tokenizer-demo .tk-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      #tokenizer-demo .tk-pill {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: #f4f6f8;
+        border: 1px solid #d7dde3;
+        max-width: 100%;
+      }
+
+      #tokenizer-demo .tk-piece {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      #tokenizer-demo .tk-space {
+        display: inline-block;
+        width: 0.55em;
+        height: 1em;
+        flex: 0 0 auto;
+      }
+
+      #tokenizer-demo .tk-tab {
+        display: inline-block;
+        width: 2.2em;
+        height: 1em;
+        flex: 0 0 auto;
+      }
+
+      #tokenizer-demo .tk-newline {
+        display: inline-block;
+        width: 1.2em;
+        height: 1.2em;
+        border-radius: 4px;
+        background: rgba(0,0,0,0.06);
+        flex: 0 0 auto;
+      }
+
+      #tokenizer-demo .tk-text {
+        white-space: pre;
+      }
+
+      #tokenizer-demo .tk-id {
+        font-size: 12px;
+        color: #666;
+      }
+
+      #tokenizer-demo .tk-empty {
+        margin-top: 18px;
+        color: #777;
+        font-size: 14px;
+      }
+
+      #tokenizer-demo .tk-note {
+        margin-top: 14px;
+        font-size: 13px;
+        color: #666;
+      }
+    </style>
+
+    <div class="tk-wrap">
+      <label class="tk-label" for="tk-input">
+        Type text below to see how it gets tokenized
+      </label>
+
+      <input
+        id="tk-input"
+        class="tk-input"
+        type="text"
+        placeholder=""
+        autocomplete="off"
+      />
+
+      <div class="tk-meta">
+        <div><strong>Model:</strong> gpt-4o</div>
+        <div><strong>Tokens:</strong> <span id="tk-count">0</span></div>
+        <div><strong>Characters:</strong> <span id="char-count">0</span></div>
+      </div>
+
+      <div id="tk-pills" class="tk-pills"></div>
+      <div id="tk-empty" class="tk-empty">Start typing to see token pills appear.</div>
+
+      <div class="tk-note">
+        Each pill shows one decoded token fragment and its token ID.
+      </div>
+    </div>
+  `;
+
+  const input = root.querySelector("#tk-input");
+  const pills = root.querySelector("#tk-pills");
+  const empty = root.querySelector("#tk-empty");
+  const tokenCount = root.querySelector("#tk-count");
+  const charCount = root.querySelector("#char-count");
+
+  const enc = encodingForModel("gpt-4o");
+
+  function escapeHtml(str) {
+    return str
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function tokenFragmentToHtml(str) {
+    let html = "";
+
+    for (const ch of str) {
+      if (ch === " ") {
+        html += `<span class="tk-space"></span>`;
+      } else if (ch === "\t") {
+        html += `<span class="tk-tab"></span>`;
+      } else if (ch === "\n") {
+        html += `<span class="tk-newline"></span>`;
+      } else {
+        html += `<span class="tk-text">${escapeHtml(ch)}</span>`;
+      }
+    }
+
+    if (!html) {
+      html = `<span class="tk-text"></span>`;
+    }
+
+    return html;
+  }
+
+  function renderTokens(text) {
+    charCount.textContent = String(text.length);
+
+    if (!text) {
+      tokenCount.textContent = "0";
+      pills.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+
+    const tokenIds = enc.encode(text);
+    tokenCount.textContent = String(tokenIds.length);
+
+    if (!tokenIds.length) {
+      pills.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+
+    empty.style.display = "none";
+
+    pills.innerHTML = tokenIds.map((id) => {
+      let piece = "";
+
+      try {
+        piece = enc.decode([id]);
+      } catch {
+        piece = "[unprintable]";
+      }
+
+      return `
+        <div class="tk-pill" title="Token ID: ${id}">
+          <div class="tk-piece">${tokenFragmentToHtml(piece)}</div>
+          <div class="tk-id">ID: ${id}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  input.addEventListener("input", (e) => {
+    renderTokens(e.target.value);
+  });
+
+  renderTokens("");
+</script>
