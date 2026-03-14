@@ -1,0 +1,146 @@
+<style>
+    :root {
+        --primary-brand: #3f51b5;
+        --accent-success: #10b981;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-white: #FFFFFF;
+        --transition: all 0.2s ease;
+    }
+
+    .ffa-contact-card {
+        font-family: 'Inter', -apple-system, system-ui, sans-serif;
+        background-color: var(--bg-white);
+        max-width: 450px;
+        margin: 20px auto;
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .contact-header h3 {
+        margin: 0 0 8px 0;
+        color: var(--text-main);
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .contact-header p {
+        margin: 0 0 20px 0;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .email-display {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px dashed #cbd5e1;
+        font-family: monospace;
+        font-size: 1.1rem;
+        color: var(--primary-brand);
+        margin-bottom: 20px;
+        display: block;
+        word-break: break-all;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn-contact {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .btn-email {
+        background-color: var(--primary-brand);
+        color: white;
+    }
+
+    .btn-email:hover {
+        background-color: #303f9f;
+        transform: translateY(-1px);
+    }
+
+    .btn-copy {
+        background-color: #f1f5f9;
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-copy:hover {
+        background-color: #e2e8f0;
+    }
+
+    .btn-copy.success {
+        background-color: var(--accent-success);
+        color: white;
+        border-color: var(--accent-success);
+    }
+
+    /* Small animation for the success state */
+    @keyframes pop {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .success {
+        animation: pop 0.3s ease-in-out;
+    }
+</style>
+
+<div class="ffa-contact-card">
+    <div class="contact-header">
+        <h3>Contact the Dean</h3>
+        <p>Have a specific question or need academic guidance? Reach out directly.</p>
+    </div>
+
+    <div class="email-display" id="dean-email">dean@futurefictionacademy.com</div>
+
+    <div class="action-row">
+        <a href="mailto:dean@futurefictionacademy.com" class="btn-contact btn-email">
+            Launch Email
+        </a>
+        <button onclick="copyEmail()" id="copy-btn" class="btn-contact btn-copy">
+            Copy Address
+        </button>
+    </div>
+</div>
+
+<script>
+    function copyEmail() {
+        const email = document.getElementById('dean-email').innerText;
+        const btn = document.getElementById('copy-btn');
+        
+        navigator.clipboard.writeText(email).then(() => {
+            const originalText = btn.innerText;
+            btn.innerText = "Copied!";
+            btn.classList.add('success');
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('success');
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+</script>
