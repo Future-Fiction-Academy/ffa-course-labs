@@ -97,7 +97,6 @@
             text-transform: uppercase;
         }
 
-        .input,
         .select,
         .button {
             width: 100%;
@@ -107,14 +106,9 @@
             font: inherit;
         }
 
-        .input,
         .select {
             background: rgba(15, 23, 42, 0.8);
             padding: 10px 12px;
-        }
-
-        .input::placeholder {
-            color: #8ea0c9;
         }
 
         .button {
@@ -138,19 +132,6 @@
             background: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(148, 163, 184, 0.34);
             font-weight: 600;
-        }
-
-        .button-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .hint {
-            margin: 0;
-            color: #a9b7dc;
-            font-size: 0.83rem;
-            line-height: 1.35;
         }
 
         .list {
@@ -356,23 +337,6 @@
         <section class="layout">
             <aside class="left panel">
                 <div>
-                    <label class="label" for="titles-input">App Titles (comma-separated)</label>
-                    <input
-                        id="titles-input"
-                        class="input"
-                        type="text"
-                        spellcheck="false"
-                        placeholder="email-the-dean, discord-invite, resources, tokens"
-                    >
-                    <p class="hint">Naming convention: each title maps to <code>&lt;title&gt;.html</code> and <code>screenshots/&lt;title&gt;.png</code>.</p>
-                </div>
-
-                <div class="button-row">
-                    <button id="apply-btn" class="button" type="button">Apply Titles</button>
-                    <button id="reset-btn" class="button ghost" type="button">Reset Defaults</button>
-                </div>
-
-                <div>
                     <label class="label" for="app-select">Quick Selector</label>
                     <select id="app-select" class="select"></select>
                 </div>
@@ -413,13 +377,10 @@
     </main>
 
     <script>
-        const DEFAULT_TITLES = ["email-the-dean", "discord-invite", "resources", "tokens"];
-        const STORAGE_KEY = "ffa-labs-playground-titles";
+        const DATA_SOURCE = "playground-apps.json";
+        const FALLBACK_TITLES = ["email-the-dean", "discord-invite", "resources", "tokens"];
 
         const elements = {
-            input: document.getElementById("titles-input"),
-            applyBtn: document.getElementById("apply-btn"),
-            resetBtn: document.getElementById("reset-btn"),
             select: document.getElementById("app-select"),
             list: document.getElementById("app-list"),
             image: document.getElementById("preview-image"),
@@ -435,7 +396,6 @@
         };
 
         let titles = [];
-        let hoveredTitle = "";
         let selectedTitle = "";
 
         function formatTitle(slug) {
@@ -446,10 +406,9 @@
                 .join(" ");
         }
 
-        function normalizeTitles(rawText) {
-            return rawText
-                .split(",")
-                .map((item) => item.trim())
+        function normalizeTitles(values) {
+            return values
+                .map((item) => String(item).trim())
                 .filter(Boolean)
                 .filter((value, index, arr) => arr.indexOf(value) === index);
         }
@@ -523,12 +482,10 @@
             `;
 
             button.addEventListener("mouseenter", () => {
-                hoveredTitle = slug;
                 updatePreview(slug, "hover");
             });
 
             button.addEventListener("mouseleave", () => {
-                hoveredTitle = "";
                 updatePreview(selectedTitle || "", selectedTitle ? "selected" : "");
             });
 
@@ -558,39 +515,26 @@
             }
         }
 
-        function loadSavedTitles() {
+        async function loadTitlesFromJson() {
             try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (!saved) return DEFAULT_TITLES.slice();
-                const parsed = JSON.parse(saved);
-                if (!Array.isArray(parsed)) return DEFAULT_TITLES.slice();
-                const cleaned = parsed
-                    .map((item) => String(item).trim())
-                    .filter(Boolean);
-                return cleaned.length ? cleaned : DEFAULT_TITLES.slice();
+                const response = await fetch(DATA_SOURCE, { cache: "no-store" });
+                if (!response.ok) {
+                    throw new Error(`Request failed with ${response.status}`);
+                }
+                const payload = await response.json();
+                if (!payload || !Array.isArray(payload.titles)) {
+                    throw new Error("JSON must include a titles array");
+                }
+                const cleaned = normalizeTitles(payload.titles);
+                if (!cleaned.length) {
+                    throw new Error("No valid titles in JSON");
+                }
+                return cleaned;
             } catch (error) {
-                return DEFAULT_TITLES.slice();
+                setStatus(false, `Could not read ${DATA_SOURCE}; using fallback list`);
+                return FALLBACK_TITLES.slice();
             }
         }
-
-        function applyTitles(fromInput) {
-            const parsed = normalizeTitles(fromInput);
-            titles = parsed.length ? parsed : DEFAULT_TITLES.slice();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(titles));
-            elements.input.value = titles.join(", ");
-            renderTitles();
-        }
-
-        elements.applyBtn.addEventListener("click", () => {
-            applyTitles(elements.input.value);
-        });
-
-        elements.resetBtn.addEventListener("click", () => {
-            localStorage.removeItem(STORAGE_KEY);
-            titles = DEFAULT_TITLES.slice();
-            elements.input.value = titles.join(", ");
-            renderTitles();
-        });
 
         elements.select.addEventListener("change", (event) => {
             setSelected(event.target.value);
@@ -612,9 +556,12 @@
             setStatus(false, "Could not load selected app");
         });
 
-        titles = loadSavedTitles();
-        elements.input.value = titles.join(", ");
-        renderTitles();
+        async function init() {
+            titles = await loadTitlesFromJson();
+            renderTitles();
+        }
+
+        init();
     </script>
 </body>
 </html>
