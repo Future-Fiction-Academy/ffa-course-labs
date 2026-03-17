@@ -1,0 +1,493 @@
+<!--
+  ──────────────────────────────────────────────
+  File:        act-structure.html
+  Description: Interactive act-structure reference widget.
+               Select a story structure from the dropdown and see
+               major beats mapped to acts in a visual card layout.
+  Version:     1.0.0
+  Created:     2026-03-17
+  Modified:    2026-03-17
+  Author:      Carlo V. Santiago
+  Tags:        ffa, course-labs, story-structure, iframe-component
+  ──────────────────────────────────────────────
+-->
+<style>
+  :root {
+    --brand-primary: #3f51b5;
+    --brand-accent: #ff9800;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #ffffff;
+    --bg: #ffffff;
+    --card-bg: #f8fafc;
+    --border: #e2e8f0;
+    --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 6px 18px -4px rgba(0, 0, 0, 0.12);
+    --radius: 12px;
+    --transition: all 0.22s ease;
+  }
+
+  .as-wrap {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 28px;
+    box-sizing: border-box;
+  }
+
+  .as-header {
+    margin-bottom: 18px;
+  }
+
+  .as-header h2 {
+    margin: 0 0 4px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+  }
+
+  .as-header p {
+    margin: 0 0 14px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .as-select-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .as-select {
+    flex: 1;
+    min-width: 220px;
+    max-width: 360px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .as-select:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.12);
+  }
+
+  .as-badge {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(63, 81, 181, 0.1);
+    color: var(--brand-primary);
+    border: 1px solid rgba(63, 81, 181, 0.25);
+    white-space: nowrap;
+  }
+
+  /* ── Act Grid ── */
+  .as-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .as-act-card {
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fadeUp 0.3s ease forwards;
+  }
+
+  .as-act-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: #c7d2fe;
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .as-act-head {
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+
+  .as-act-label {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 10px 14px 4px;
+    color: var(--text-dark);
+  }
+
+  .as-beat-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .as-beat-list li {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: var(--card-bg);
+    border-left: 3px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+
+  .as-beat-list li:hover {
+    border-left-color: var(--brand-primary);
+    color: var(--text-dark);
+  }
+
+  /* ── Empty state ── */
+  .as-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    margin-top: 20px;
+  }
+
+  /* ── Description block ── */
+  .as-description {
+    margin-top: 18px;
+    padding: 12px 16px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    border-left: 4px solid var(--brand-primary);
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.55;
+    display: none;
+  }
+
+  .as-description.visible {
+    display: block;
+  }
+
+  @media (max-width: 600px) {
+    .as-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="as-wrap">
+  <div class="as-header">
+    <h2>Act Structure Reference</h2>
+    <p>Select a story structure to see major beats mapped to each act.</p>
+
+    <div class="as-select-row">
+      <select class="as-select" id="as-select" aria-label="Select a story structure">
+        <option value="">— Choose a structure —</option>
+      </select>
+      <span class="as-badge" id="as-badge" style="display:none;"></span>
+    </div>
+  </div>
+
+  <div class="as-description" id="as-description"></div>
+  <div id="as-output"></div>
+</div>
+
+<script>
+  // ── Data ──────────────────────────────────────────────────────────────────
+
+  const ACT_STRUCTURES = [
+    {
+      id: "three-act",
+      label: "3-Act Structure",
+      description: "The foundational Western story model. Setup, conflict, and resolution across three balanced acts — the backbone of most commercial fiction and screenwriting.",
+      acts: [
+        {
+          name: "Act 1",
+          subtitle: "Setup",
+          color: "#3b82f6",
+          beats: ["Opening Image", "Ordinary World", "Inciting Incident", "Debate / Refusal", "Plot Point 1 (Break Into 2)"]
+        },
+        {
+          name: "Act 2",
+          subtitle: "Confrontation",
+          color: "#8b5cf6",
+          beats: ["Rising Action", "Midpoint Shift", "Escalating Obstacles", "Dark Night / All Is Lost", "Plot Point 2 (Break Into 3)"]
+        },
+        {
+          name: "Act 3",
+          subtitle: "Resolution",
+          color: "#f59e0b",
+          beats: ["Climax", "Protagonist's Choice", "Falling Action", "Resolution", "Final Image"]
+        }
+      ]
+    },
+    {
+      id: "five-act",
+      label: "5-Act Structure (Freytag's Pyramid)",
+      description: "Gustav Freytag's 19th-century model for dramatic narrative, popularized through classical and Shakespearean analysis. Each act is a distinct dramatic phase.",
+      acts: [
+        {
+          name: "Act 1",
+          subtitle: "Exposition",
+          color: "#3b82f6",
+          beats: ["Introduce characters", "Establish setting & tone", "Present the status quo", "Hint at central tension"]
+        },
+        {
+          name: "Act 2",
+          subtitle: "Rising Action",
+          color: "#6366f1",
+          beats: ["Inciting incident", "Complications arise", "Stakes escalate", "Character alliances & conflicts form"]
+        },
+        {
+          name: "Act 3",
+          subtitle: "Climax",
+          color: "#a855f7",
+          beats: ["Highest tension point", "Protagonist faces greatest challenge", "Decisive confrontation", "Turning point of no return"]
+        },
+        {
+          name: "Act 4",
+          subtitle: "Falling Action",
+          color: "#ec4899",
+          beats: ["Aftermath of climax", "Loose ends surface", "Secondary conflicts resolve", "Movement toward resolution"]
+        },
+        {
+          name: "Act 5",
+          subtitle: "Denouement",
+          color: "#f59e0b",
+          beats: ["Final resolution", "New normal established", "Character transformation confirmed", "Closing image"]
+        }
+      ]
+    },
+    {
+      id: "save-the-cat",
+      label: "Save the Cat (Blake Snyder)",
+      description: "Blake Snyder's beat sheet — 15 precise story beats mapped to page counts for screenplays. Widely used in commercial fiction for its market-tested precision.",
+      acts: [
+        {
+          name: "Act 1",
+          subtitle: "Setup",
+          color: "#3b82f6",
+          beats: ["Opening Image", "Theme Stated", "Set-Up", "Catalyst", "Debate"]
+        },
+        {
+          name: "Act 2A",
+          subtitle: "Fun & Games",
+          color: "#8b5cf6",
+          beats: ["Break Into Two", "B Story", "Fun and Games", "Midpoint"]
+        },
+        {
+          name: "Act 2B",
+          subtitle: "Descent",
+          color: "#a855f7",
+          beats: ["Bad Guys Close In", "All Is Lost", "Dark Night of the Soul"]
+        },
+        {
+          name: "Act 3",
+          subtitle: "Finale",
+          color: "#f59e0b",
+          beats: ["Break Into Three", "Finale", "Final Image"]
+        }
+      ]
+    },
+    {
+      id: "hero-journey",
+      label: "The Hero's Journey (Campbell / Vogler)",
+      description: "Joseph Campbell's monomyth as adapted by Christopher Vogler for modern storytelling. Twelve archetypal stages that map the universal transformation arc.",
+      acts: [
+        {
+          name: "Act 1",
+          subtitle: "Departure",
+          color: "#3b82f6",
+          beats: ["Ordinary World", "Call to Adventure", "Refusal of the Call", "Meeting the Mentor", "Crossing the Threshold"]
+        },
+        {
+          name: "Act 2",
+          subtitle: "Initiation",
+          color: "#8b5cf6",
+          beats: ["Tests, Allies & Enemies", "Approach to the Inmost Cave", "The Ordeal", "Seizing the Sword (Reward)"]
+        },
+        {
+          name: "Act 3",
+          subtitle: "Return",
+          color: "#f59e0b",
+          beats: ["The Road Back", "The Resurrection", "Return with the Elixir"]
+        }
+      ]
+    },
+    {
+      id: "story-circle",
+      label: "Dan Harmon's Story Circle",
+      description: "An eight-step circular narrative engine derived from Campbell. Emphasizes character change through desire, unfamiliarity, cost, and return. Used extensively in television.",
+      acts: [
+        {
+          name: "Steps 1–2",
+          subtitle: "You / Need",
+          color: "#3b82f6",
+          beats: ["Establish character in zone of comfort", "Something is not right — a need or want emerges"]
+        },
+        {
+          name: "Steps 3–4",
+          subtitle: "Go / Search",
+          color: "#6366f1",
+          beats: ["Enter an unfamiliar situation", "Adapt — road of trials, pursuit of the goal"]
+        },
+        {
+          name: "Steps 5–6",
+          subtitle: "Find / Take",
+          color: "#a855f7",
+          beats: ["Get what they wanted", "Pay a heavy price for it"]
+        },
+        {
+          name: "Steps 7–8",
+          subtitle: "Return / Change",
+          color: "#f59e0b",
+          beats: ["Return to familiar situation", "Character has fundamentally changed"]
+        }
+      ]
+    },
+    {
+      id: "four-act",
+      label: "4-Act Structure",
+      description: "A symmetrical four-part model that splits the traditional long middle act into two, revealing a clearer midpoint pivot. Increasingly common in commercial fiction craft guides.",
+      acts: [
+        {
+          name: "Act 1",
+          subtitle: "Setup",
+          color: "#3b82f6",
+          beats: ["Ordinary world", "Introduce protagonist & world", "Inciting incident", "Decision to engage"]
+        },
+        {
+          name: "Act 2",
+          subtitle: "Reaction",
+          color: "#6366f1",
+          beats: ["New world / situation", "Protagonist reactive", "Rising complications", "Midpoint revelation or shift"]
+        },
+        {
+          name: "Act 3",
+          subtitle: "Action",
+          color: "#a855f7",
+          beats: ["Protagonist becomes proactive", "Plan & pursuit", "Darkest moment / all is lost", "Final decision"]
+        },
+        {
+          name: "Act 4",
+          subtitle: "Resolution",
+          color: "#f59e0b",
+          beats: ["Climax / final confrontation", "Consequences play out", "New equilibrium", "Closing image"]
+        }
+      ]
+    }
+  ];
+
+  // ── Build dropdown ────────────────────────────────────────────────────────
+
+  const select = document.getElementById("as-select");
+  const output = document.getElementById("as-output");
+  const badge  = document.getElementById("as-badge");
+  const desc   = document.getElementById("as-description");
+
+  ACT_STRUCTURES.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.label;
+    select.appendChild(opt);
+  });
+
+  // ── Color palette generator (lightens header background) ─────────────────
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return { r, g, b };
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  function render(structureId) {
+    output.innerHTML = "";
+    desc.classList.remove("visible");
+
+    if (!structureId) {
+      badge.style.display = "none";
+      output.innerHTML = `<div class="as-empty">Select a structure above to explore its beats.</div>`;
+      return;
+    }
+
+    const structure = ACT_STRUCTURES.find(s => s.id === structureId);
+    if (!structure) return;
+
+    // Badge
+    badge.textContent = `${structure.acts.length} Acts`;
+    badge.style.display = "inline-block";
+
+    // Description block
+    desc.textContent = structure.description;
+    desc.classList.add("visible");
+
+    // Grid
+    const grid = document.createElement("div");
+    grid.className = "as-grid";
+
+    structure.acts.forEach((act, i) => {
+      const { r, g, b } = hexToRgb(act.color);
+      const card = document.createElement("div");
+      card.className = "as-act-card";
+      card.style.animationDelay = `${i * 55}ms`;
+
+      const beatsHtml = act.beats
+        .map(beat => `<li>${beat}</li>`)
+        .join("");
+
+      card.innerHTML = `
+        <div class="as-act-head" style="background: linear-gradient(135deg, rgba(${r},${g},${b},0.85), rgba(${r},${g},${b},0.65));">
+          ${act.name}
+        </div>
+        <div class="as-act-label">${act.subtitle}</div>
+        <ul class="as-beat-list">${beatsHtml}</ul>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    output.appendChild(grid);
+  }
+
+  // ── Event listeners ───────────────────────────────────────────────────────
+
+  select.addEventListener("change", e => render(e.target.value));
+
+  // Init with empty state
+  render("");
+</script>
