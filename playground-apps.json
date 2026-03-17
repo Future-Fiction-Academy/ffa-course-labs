@@ -4,6 +4,7 @@
         "discord-invite",
         "resources",
         "tokens",
-        "act-structure"
+        "act-structure-card",
+        "act-structure-fullscreen"
     ]
 }
