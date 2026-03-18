@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Prompt Tutor — FFA Course Labs</title>
+  <!-- JSZip for ZIP export (approved CDN ESM import per FFA component contract) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body style="margin:0;padding:0;">
+
+<!--
+  ──────────────────────────────────────────────
+  File:        or-image-chat.html
+  Description: AI image prompt coaching tool for FFA Course Labs.
+               A text coach (gpt-5-mini) guides students to craft strong image
+               prompts, then generates the image via the selected image model.
+               Exports a ZIP with a markdown transcript and separate image files.
+  Version:     1.3.0
+  Created:     2026-03-17
+  Modified:    2026-03-17
+  Author:      Carlo V. Santiago
+  Tags:        ffa, course-labs, ai-tools, image-generation, openrouter, iframe-component
+  ──────────────────────────────────────────────
+-->
+<style>
+  /* ── Night (default) ─────────────────────────────────────────────────────── */
+  .oic-panel {
+    --oic-text:          #f9fafb;
+    --oic-muted:         #9ca3af;
+    --oic-panel-bg:      radial-gradient(circle at top left, #1b2335, #050816);
+    --oic-panel-shadow:  0 20px 40px rgba(0,0,0,0.5);
+    --oic-chat-bg:       radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
+    --oic-chat-border:   rgba(55,65,81,0.7);
+    --oic-bubble-bg:     rgba(15,23,42,0.95);
+    --oic-bubble-border: rgba(75,85,99,0.8);
+    --oic-field-bg:      rgba(15,23,42,0.9);
+    --oic-field-border:  rgba(148,163,184,0.35);
+    --oic-field-color:   #e5e7eb;
+    --oic-placeholder:   #4b5563;
+    --oic-hint:          #4b5563;
+    --oic-pill-bg:       rgba(15,118,110,0.2);
+    --oic-pill-color:    #a5f3fc;
+    --oic-pill-border:   rgba(45,212,191,0.35);
+    --oic-icon-bg:       rgba(255,255,255,0.07);
+    --oic-icon-border:   rgba(148,163,184,0.25);
+    --oic-icon-hover-bg: rgba(255,255,255,0.16);
+    --oic-tool-bg:       rgba(255,255,255,0.05);
+    --oic-tool-border:   rgba(148,163,184,0.2);
+    --oic-tool-hover-bg: rgba(255,255,255,0.13);
+    --oic-user-bubble:   linear-gradient(135deg,rgba(59,130,246,0.3),rgba(14,165,233,0.3));
+    --oic-user-border:   rgba(96,165,250,0.8);
+    --oic-scrollbar:     rgba(148,163,184,0.2);
+    --oic-system-bg:     rgba(245,158,11,0.08);
+    --oic-system-border: rgba(245,158,11,0.3);
+    --oic-system-color:  #fcd34d;
+    --oic-start-shadow:  0 0 20px rgba(34,197,94,0.3);
+  }
+
+  /* ── Day ─────────────────────────────────────────────────────────────────── */
+  .oic-panel.oic-day {
+    --oic-text:          #1e293b;
+    --oic-muted:         #64748b;
+    --oic-panel-bg:      linear-gradient(135deg, #f1f5fe, #e8edf8);
+    --oic-panel-shadow:  0 4px 24px rgba(63,81,181,0.12);
+    --oic-chat-bg:       #f8fafc;
+    --oic-chat-border:   #e2e8f0;
+    --oic-bubble-bg:     #ffffff;
+    --oic-bubble-border: #e2e8f0;
+    --oic-field-bg:      #ffffff;
+    --oic-field-border:  #cbd5e1;
+    --oic-field-color:   #1e293b;
+    --oic-placeholder:   #94a3b8;
+    --oic-hint:          #94a3b8;
+    --oic-pill-bg:       rgba(15,118,110,0.08);
+    --oic-pill-color:    #0f766e;
+    --oic-pill-border:   rgba(15,118,110,0.25);
+    --oic-icon-bg:       rgba(0,0,0,0.04);
+    --oic-icon-border:   #e2e8f0;
+    --oic-icon-hover-bg: rgba(0,0,0,0.09);
+    --oic-tool-bg:       rgba(0,0,0,0.03);
+    --oic-tool-border:   #e2e8f0;
+    --oic-tool-hover-bg: rgba(0,0,0,0.08);
+    --oic-user-bubble:   linear-gradient(135deg,rgba(59,130,246,0.1),rgba(14,165,233,0.1));
+    --oic-user-border:   rgba(96,165,250,0.6);
+    --oic-scrollbar:     rgba(100,116,139,0.25);
+    --oic-system-bg:     rgba(245,158,11,0.06);
+    --oic-system-border: rgba(245,158,11,0.25);
+    --oic-system-color:  #92400e;
+    --oic-start-shadow:  0 0 16px rgba(34,197,94,0.2);
+  }
+
+  /* ── Outer wrapper (white — FFA contract) ────────────────────────────────── */
+  .oic-wrap {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .oic-panel {
+    background: var(--oic-panel-bg);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: var(--oic-panel-shadow);
+    color: var(--oic-text);
+    transition: background 0.35s, box-shadow 0.35s;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────────────────── */
+  .oic-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .oic-title { font-weight: 700; font-size: 1.05rem; letter-spacing: 0.02em; }
+  .oic-header-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .oic-pill {
+    font-size: 0.72rem; padding: 4px 10px; border-radius: 999px;
+    background: var(--oic-pill-bg); color: var(--oic-pill-color);
+    border: 1px solid var(--oic-pill-border); white-space: nowrap;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+
+  /* ── Icon buttons ────────────────────────────────────────────────────────── */
+  .oic-icon-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--oic-icon-border); background: var(--oic-icon-bg);
+    color: var(--oic-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0; transition: background 0.2s, transform 0.15s;
+  }
+  .oic-icon-btn:hover:not(:disabled) { background: var(--oic-icon-hover-bg); transform: scale(1.08); }
+  .oic-icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Key row ─────────────────────────────────────────────────────────────── */
+  .oic-key-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+
+  .oic-api-key {
+    flex: 1 1 220px; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--oic-field-border);
+    background: var(--oic-field-bg); color: var(--oic-field-color);
+    font-size: 0.82rem; font-family: inherit; outline: none;
+    transition: border-color 0.2s, background 0.3s;
+  }
+  .oic-api-key::placeholder { color: var(--oic-placeholder); }
+  .oic-api-key:focus { border-color: rgba(96,165,250,0.7); box-shadow: 0 0 0 3px rgba(96,165,250,0.1); }
+
+  .oic-key-btn {
+    padding: 8px 18px; border-radius: 999px; border: none;
+    font-size: 0.82rem; cursor: pointer; font-weight: 700; white-space: nowrap;
+    background: linear-gradient(135deg, #22c55e, #0ea5e9); color: #0b1120;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .oic-key-btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.92; }
+  .oic-key-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Model row ───────────────────────────────────────────────────────────── */
+  .oic-model-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px; flex-wrap: nowrap;
+  }
+  .oic-model-label { font-size: 0.75rem; color: var(--oic-muted); white-space: nowrap; flex-shrink: 0; }
+
+  .oic-model-select {
+    flex: 1 1 0; min-width: 0; padding: 7px 10px; border-radius: 8px;
+    border: 1px solid var(--oic-field-border);
+    background: var(--oic-field-bg); color: var(--oic-field-color);
+    font-size: 0.8rem; font-family: inherit; cursor: pointer; outline: none;
+    transition: border-color 0.2s, background 0.3s;
+  }
+  .oic-model-select:focus { border-color: rgba(96,165,250,0.7); }
+  .oic-model-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Start Chatting button ───────────────────────────────────────────────── */
+  .oic-start-row {
+    display: flex; justify-content: center;
+    margin: 12px 0; transition: opacity 0.3s;
+  }
+
+  .oic-start-btn {
+    padding: 9px 28px; border-radius: 999px; border: none;
+    font-size: 0.88rem; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, #22c55e, #0ea5e9);
+    color: #020617; letter-spacing: 0.02em;
+    box-shadow: var(--oic-start-shadow);
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.3s;
+  }
+  .oic-start-btn:hover:not(:disabled) { transform: translateY(-1px); opacity: 0.93; }
+  .oic-start-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+  /* ── Status ──────────────────────────────────────────────────────────────── */
+  .oic-status {
+    font-size: 0.73rem; color: var(--oic-muted);
+    margin-bottom: 10px; min-height: 1.1em; transition: color 0.2s;
+  }
+
+  /* ── Chat window ─────────────────────────────────────────────────────────── */
+  .oic-chat {
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 360px; overflow-y: auto;
+    padding: 8px 10px; margin-bottom: 8px; border-radius: 12px;
+    background: var(--oic-chat-bg); border: 1px solid var(--oic-chat-border);
+    scroll-behavior: smooth; transition: background 0.35s, border-color 0.35s;
+  }
+  .oic-chat::-webkit-scrollbar { width: 5px; }
+  .oic-chat::-webkit-scrollbar-track { background: transparent; }
+  .oic-chat::-webkit-scrollbar-thumb { background: var(--oic-scrollbar); border-radius: 3px; }
+
+  /* Empty state */
+  .oic-empty { text-align: center; padding: 28px 16px; color: var(--oic-muted); font-size: 0.82rem; opacity: 0.7; }
+
+  /* ── Message rows ────────────────────────────────────────────────────────── */
+  .oic-row { display: flex; gap: 8px; align-items: flex-start; }
+  .oic-row.user { justify-content: flex-end; }
+
+  .oic-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 20%, #22c55e, #0ea5e9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.63rem; font-weight: 700; color: #020617;
+    flex-shrink: 0; user-select: none;
+  }
+  .oic-avatar.user { background: radial-gradient(circle at 30% 20%, #fbbf24, #f97316); }
+
+  .oic-bubble {
+    max-width: 82%; border-radius: 14px; padding: 9px 13px;
+    font-size: 0.83rem; line-height: 1.5;
+    background: var(--oic-bubble-bg); border: 1px solid var(--oic-bubble-border);
+    word-wrap: break-word; overflow: hidden; color: var(--oic-text);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .oic-row.user .oic-bubble { background: var(--oic-user-bubble); border-color: var(--oic-user-border); }
+
+  .oic-bubble.system {
+    background: var(--oic-system-bg); border-color: var(--oic-system-border);
+    color: var(--oic-system-color); font-size: 0.78rem; font-style: italic;
+  }
+
+  .oic-bubble img { width: 100%; border-radius: 10px; display: block; cursor: pointer; margin-bottom: 4px; }
+  .oic-bubble small { display: block; margin-top: 4px; opacity: 0.55; font-size: 0.7rem; }
+
+  /* Typing indicator */
+  .oic-typing { display: flex; gap: 4px; padding: 4px 0; align-items: center; }
+  .oic-typing span {
+    width: 7px; height: 7px; border-radius: 50%; background: #0ea5e9;
+    animation: oic-blink 1.2s infinite;
+  }
+  .oic-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .oic-typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes oic-blink {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── Chat input row ──────────────────────────────────────────────────────── */
+  .oic-input-row { display: flex; gap: 8px; align-items: flex-end; }
+
+  /* ── Usage strip ────────────────────────────────────────────────────── */
+  .oic-usage {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    font-size: 0.71rem; color: var(--oic-muted);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px; min-height: 1em; opacity: 0.85;
+  }
+  .oic-usage-seg { white-space: nowrap; }
+  .oic-usage-cost { color: #a7f3d0; font-weight: 600; }
+  .oic-panel.oic-day .oic-usage-cost { color: #047857; }
+
+  /* ── Generate quick-action button ───────────────────────────────────────── */
+  .oic-quick-row {
+    display: flex; justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+
+  .oic-gen-btn {
+    padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(245,158,11,0.45);
+    cursor: pointer; font-size: 0.76rem; font-weight: 600; white-space: nowrap;
+    background: rgba(245,158,11,0.12);
+    color: #f59e0b;
+    display: flex; align-items: center; gap: 5px;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .oic-panel.oic-day .oic-gen-btn { color: #b45309; background: rgba(245,158,11,0.08); border-color: rgba(180,83,9,0.3); }
+  .oic-gen-btn:hover:not(:disabled) { background: rgba(245,158,11,0.22); transform: translateY(-1px); }
+  .oic-gen-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .oic-prompt {
+    flex: 1 1 0; min-width: 0; min-height: 44px; max-height: 110px;
+    resize: vertical; border-radius: 10px;
+    border: 1px solid var(--oic-field-border);
+    padding: 8px 12px; background: var(--oic-field-bg); color: var(--oic-field-color);
+    font-size: 0.83rem; font-family: inherit; outline: none;
+    transition: border-color 0.2s, background 0.3s;
+  }
+  .oic-prompt::placeholder { color: var(--oic-placeholder); }
+  .oic-prompt:focus { border-color: rgba(96,165,250,0.7); box-shadow: 0 0 0 3px rgba(96,165,250,0.1); }
+
+  .oic-send-btn {
+    padding: 0 16px; height: 44px; border-radius: 999px; border: none;
+    cursor: pointer; font-size: 0.82rem; font-weight: 700; white-space: nowrap;
+    background: linear-gradient(135deg, #22c55e, #0ea5e9); color: #020617;
+    display: flex; align-items: center; gap: 5px;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .oic-send-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .oic-send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .oic-stop-btn {
+    padding: 0 12px; height: 44px; border-radius: 10px; border: none;
+    cursor: pointer; font-size: 0.76rem; font-weight: 600; white-space: nowrap;
+    background: rgba(239,68,68,0.12); color: #fca5a5;
+    border: 1px solid rgba(239,68,68,0.3);
+    transition: background 0.15s, transform 0.15s;
+    display: none;
+  }
+  .oic-stop-btn.visible { display: flex; align-items: center; gap: 4px; }
+  .oic-stop-btn:hover { background: rgba(239,68,68,0.24); transform: translateY(-1px); }
+  .oic-panel.oic-day .oic-stop-btn { color: #dc2626; background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.2); }
+
+  /* ── Toolbar ─────────────────────────────────────────────────────────────── */
+  .oic-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 10px; flex-wrap: wrap; gap: 8px;
+  }
+  .oic-hint { font-size: 0.72rem; color: var(--oic-hint); }
+  .oic-hint kbd { padding: 1px 5px; border-radius: 4px; font-size: 0.68rem; font-family: inherit; background: rgba(255,255,255,0.1); }
+  .oic-panel.oic-day .oic-hint kbd { background: rgba(0,0,0,0.08); }
+  .oic-toolbar-btns { display: flex; gap: 6px; }
+
+  .oic-tool-btn {
+    padding: 5px 10px; border-radius: 8px;
+    border: 1px solid var(--oic-tool-border); background: var(--oic-tool-bg);
+    color: var(--oic-muted); font-size: 0.73rem; font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    transition: background 0.2s, color 0.2s;
+  }
+  .oic-tool-btn:hover { background: var(--oic-tool-hover-bg); color: var(--oic-text); }
+
+  /* ── Responsive ──────────────────────────────────────────────────────────── */
+  @media (max-width: 580px) {
+    .oic-wrap { padding: 12px; }
+    .oic-bubble { max-width: 100%; }
+    .oic-chat { max-height: 310px; }
+  }
+</style>
+
+<div class="oic-wrap">
+  <div class="oic-panel oic-day" id="oic-panel">
+
+    <!-- Header -->
+    <div class="oic-header">
+      <div class="oic-title">✍️ Image Prompt Tutor</div>
+      <div class="oic-header-right">
+        <span class="oic-pill">OpenRouter · Student key</span>
+        <button id="oic-theme-btn" class="oic-icon-btn" title="Toggle day/night theme" aria-label="Toggle theme">☀️</button>
+      </div>
+    </div>
+
+    <!-- API key row -->
+    <div class="oic-key-row">
+      <input id="oic-key-input" type="password" class="oic-api-key"
+        placeholder="Paste your OpenRouter API key…"
+        autocomplete="off" aria-label="OpenRouter API key" />
+      <button id="oic-key-btn" class="oic-key-btn" type="button">Use key</button>
+    </div>
+
+    <!-- Image model selector -->
+    <div class="oic-model-row">
+      <span class="oic-model-label">Image model:</span>
+      <select id="oic-model-select" class="oic-model-select" aria-label="Select image model" disabled>
+        <option value="">— enter API key to load models —</option>
+      </select>
+      <button id="oic-reload-btn" class="oic-icon-btn" title="Reload image models" aria-label="Reload" disabled>🔄</button>
+    </div>
+
+    <!-- Start Chatting -->
+    <div class="oic-start-row">
+      <button id="oic-start-btn" class="oic-start-btn" type="button" disabled>
+        💬 Start Chatting
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div id="oic-status" class="oic-status">Enter your OpenRouter API key to begin.</div>
+
+    <!-- Usage strip -->
+    <div id="oic-usage" class="oic-usage"></div>
+
+    <!-- Chat window -->
+    <div id="oic-chat" class="oic-chat">
+      <div class="oic-empty">Your conversation will appear here.</div>
+    </div>
+
+    <!-- Generate quick-action -->
+    <div class="oic-quick-row">
+      <button id="oic-gen-btn" class="oic-gen-btn" type="button" disabled
+        title="Send approval and generate the image immediately">
+        ⚡ Generate
+      </button>
+    </div>
+
+    <!-- Chat input -->
+    <div class="oic-input-row">
+      <textarea id="oic-prompt" class="oic-prompt"
+        placeholder="Describe what you're imagining…"
+        aria-label="Message" disabled></textarea>
+      <button id="oic-send-btn" class="oic-send-btn" type="button" disabled>Send ↑</button>
+      <button id="oic-stop-btn" class="oic-stop-btn" type="button" title="Stop generating">■ Stop</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="oic-toolbar">
+      <div class="oic-hint">Press <kbd>⌘ Enter</kbd> to send &nbsp;·&nbsp; Right-click images to save</div>
+      <div class="oic-toolbar-btns">
+        <button id="oic-clear-btn" class="oic-tool-btn" type="button">🗑 Clear</button>
+        <button id="oic-export-btn" class="oic-tool-btn" type="button">⬇ Export .zip</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Config ────────────────────────────────────────────────────────────────────
+  const COACH_MODEL         = 'openai/gpt-5-mini';
+  const COACH_MODEL_DISPLAY = 'GPT-5 Mini (OpenAI)';
+
+  // Rough generation time hints per model family (from live integration tests).
+  // Shown in the "Generating…" system note so students aren't left wondering.
+  const MODEL_WAIT_HINTS = [
+    { match: 'gemini-2.5-flash-image',          label: '~8 seconds'  },
+    { match: 'gemini-3.1-flash-image-preview',   label: '~15 seconds' },
+    { match: 'gemini-3-pro-image-preview',       label: '~25 seconds' },
+    { match: 'gpt-5-image-mini',                 label: '~60 seconds' },
+    { match: 'gpt-5-image',                      label: '~50 seconds' },
+  ];
+
+  function modelWaitHint() {
+    const id  = modelSel.value || '';
+    const hit = MODEL_WAIT_HINTS.find(h => id.includes(h.match));
+    return hit ? ' (usually ' + hit.label + ')' : '';
+  }
+
+  // System prompt is built dynamically at session start so it includes the
+  // specific image model name and model-family prompting hints.
+  function buildSystemPrompt(imageModelName, imageModelId) {
+    // Brief model-specific prompting advice so the coach gives relevant guidance
+    let modelHints = 'Be specific about visual elements, style, mood, lighting, and composition.';
+    if (imageModelId.includes('gemini')) {
+      modelHints = `${imageModelName} responds well to rich scene descriptions, mood language, and named artistic styles (e.g. "cinematic", "watercolor", "photorealistic"). It supports aspect ratio control via the API.`;
+    } else if (imageModelId.includes('gpt-5-image')) {
+      modelHints = `${imageModelName} excels at following detailed instructions, rendering text inside images, and maintaining consistent style. Be very explicit about every visual element you want.`;
+    } else if (imageModelId.includes('flux')) {
+      modelHints = `${imageModelName} responds best to comma-separated descriptive tags combined with natural language. Include lighting, medium, camera angle, and style keywords.`;
+    }
+
+    return `You are an Image Prompt Tutor inside a creative writing and AI course.
+You are powered by ${COACH_MODEL_DISPLAY}.
+The image generation model for this session is: ${imageModelName}.
+
+Prompting notes for ${imageModelName}:
+${modelHints}
+
+
+Your coaching style:
+1. When the student describes an image idea, immediately craft a complete example prompt. Present it clearly on its own line, wrapped in quotes.
+2. Below the prompt, add a short educational analysis in this exact format:
+   **Why this prompt works:**
+   - [reason 1]
+   - [reason 2]
+   - [reason 3]
+   **What could be improved:**
+   - [improvement 1]
+   - [improvement 2]
+3. Then ask: "Would you like to modify this prompt, or shall I go ahead and generate it?"
+4. If they want changes, revise the prompt and show the analysis again for the new version.
+5. When ready, output EXACTLY this on its own line (nothing after it):
+GENERATE: [the final refined prompt]
+
+After an image is generated you will receive a note. Ask warmly if they like it. Then offer them two clear choices:
+1. **Try a variation** — suggest one specific change that could make the image more interesting (different lighting, mood, style, or composition).
+2. **Start fresh** — invite them to describe a completely different image idea.
+
+Keep it brief — 3 sentences maximum. No repeated analysis.`;
+
+  }
+
+  // ── Elements ──────────────────────────────────────────────────────────────────
+  const panel     = document.getElementById('oic-panel');
+  const keyInput  = document.getElementById('oic-key-input');
+  const keyBtn    = document.getElementById('oic-key-btn');
+  const statusEl  = document.getElementById('oic-status');
+  const chatEl    = document.getElementById('oic-chat');
+  const modelSel  = document.getElementById('oic-model-select');
+  const reloadBtn = document.getElementById('oic-reload-btn');
+  const startBtn  = document.getElementById('oic-start-btn');
+  const promptEl  = document.getElementById('oic-prompt');
+  const sendBtn   = document.getElementById('oic-send-btn');
+  const stopBtn   = document.getElementById('oic-stop-btn');
+  const themeBtn  = document.getElementById('oic-theme-btn');
+  const genBtn    = document.getElementById('oic-gen-btn');
+  const clearBtn  = document.getElementById('oic-clear-btn');
+  const exportBtn = document.getElementById('oic-export-btn');
+  const usageEl   = document.getElementById('oic-usage');
+
+  // ── State ─────────────────────────────────────────────────────────────────────
+  let apiKey      = null;
+  let isBusy      = false;
+  let isDay       = true;
+  let sessionLive = false;  // true after Start Chatting is clicked
+  let modelMeta   = {};     // id → { modalities }
+
+  // Session-scoped system prompt (built at Start Chatting time with model identity)
+  let sessionSystemPrompt = '';
+
+  // AbortController for the current in-flight fetch (coach or image)
+  let currentAbort = null;
+
+  // Coach model pricing (fetched at key entry time)
+  let coachPricing = { inp: 0, out: 0 };
+
+  // Running session token / image totals (reset on Clear)
+  let sessionStats = { promptTokens: 0, completionTokens: 0, imageCount: 0 };
+
+  // API history (text only — no image data ever sent to the coach model)
+  let apiMessages    = [];
+
+  // Display history (for UI rendering + ZIP export — includes imageUrl)
+  let displayHistory = [];
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+  function setStatus(msg, type) {
+    statusEl.textContent = msg || '';
+    statusEl.style.color = { error: '#fca5a5', ok: '#a7f3d0' }[type] || 'var(--oic-muted)';
+  }
+
+  function setBusy(busy) {
+    isBusy             = busy;
+    sendBtn.disabled   = busy || !sessionLive;
+    promptEl.disabled  = busy || !sessionLive;
+    genBtn.disabled    = busy || !sessionLive;
+    keyBtn.disabled    = busy;
+    reloadBtn.disabled = busy || !apiKey;
+    startBtn.disabled  = busy || !apiKey || !modelSel.value || sessionLive;
+    modelSel.disabled  = busy || sessionLive;
+    stopBtn.classList.toggle('visible', busy);
+  }
+
+  function scrollChat() { chatEl.scrollTop = chatEl.scrollHeight; }
+
+  // Simple markdown → HTML
+  function md(text) {
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>[\s\S]*<\/li>)/g, '<ul style="margin:6px 0 0 14px;padding:0;">$1</ul>')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── Stop ──────────────────────────────────────────────────────────────────────
+  stopBtn.addEventListener('click', function () {
+    if (currentAbort) { currentAbort.abort(); currentAbort = null; }
+  });
+
+  // ── Theme ─────────────────────────────────────────────────────────────────────
+  themeBtn.addEventListener('click', function () {
+    isDay = !isDay;
+    panel.classList.toggle('oic-day', isDay);
+    themeBtn.textContent = isDay ? '🌙' : '☀️';
+  });
+
+  // ── Pricing formatter ($X.XXX / M tokens) ─────────────────────────────────────
+  function fmtPrice(raw) {
+    const v = parseFloat(raw);
+    if (!v || v <= 0) return null;
+    return '$' + (v * 1_000_000).toFixed(3);
+  }
+
+  function hasTokenPricing(m) {
+    // Exclude models that only do per-image pricing (prompt=0 AND completion=0)
+    const inp = parseFloat(m.pricing?.prompt || 0);
+    const out = parseFloat(m.pricing?.completion || 0);
+    return inp > 0 || out > 0;
+  }
+
+  function modelOptionText(m) {
+    const inP  = fmtPrice(m.pricing?.prompt);
+    const outP = fmtPrice(m.pricing?.completion);
+    const parts = [];
+    if (inP)  parts.push(inP  + '/M in');
+    if (outP) parts.push(outP + '/M out');
+    return m.name + (parts.length ? '  ·  ' + parts.join('  ') : '');
+  }
+
+  // ── Fetch image models ────────────────────────────────────────────────────────
+  // Filter: must have image in output_modalities AND have token-based pricing.
+  async function fetchModels() {
+    if (!apiKey) return;
+    modelSel.disabled  = true;
+    reloadBtn.disabled = true;
+    startBtn.disabled  = true;
+    setStatus('Loading image models…', 'neutral');
+
+    try {
+      const res = await fetch(
+        'https://openrouter.ai/api/v1/models?output_modalities=image&order=most-popular',
+        { headers: { 'Authorization': 'Bearer ' + apiKey } }
+      );
+      if (!res.ok) throw new Error('Status ' + res.status);
+
+      const json   = await res.json();
+      const models = (json.data || []).filter(m => {
+        const outMods = m.architecture?.output_modalities || [];
+        return outMods.includes('image') && hasTokenPricing(m);
+      });
+
+      if (!models.length) throw new Error('No image models with token pricing found.');
+
+      modelMeta = {};
+      models.forEach(m => {
+        const outMods = m.architecture?.output_modalities || ['image'];
+        modelMeta[m.id] = { modalities: outMods.includes('text') ? ['image', 'text'] : ['image'] };
+      });
+
+      modelSel.innerHTML = '';
+      models.forEach(m => {
+        const opt       = document.createElement('option');
+        opt.value       = m.id;
+        opt.textContent = modelOptionText(m);
+        modelSel.appendChild(opt);
+      });
+
+      modelSel.disabled  = false;
+      reloadBtn.disabled = false;
+      startBtn.disabled  = false;
+      setStatus(models.length + ' image models loaded. Choose one, then click Start Chatting.', 'ok');
+
+    } catch (err) {
+      console.error('[oic] fetchModels:', err);
+      setStatus('Could not load models: ' + err.message, 'error');
+      modelSel.disabled  = false;
+      reloadBtn.disabled = false;
+    }
+  }
+
+  // ── Key submission ────────────────────────────────────────────────────────────
+  keyBtn.addEventListener('click', activateKey);
+  keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); activateKey(); } });
+
+  function activateKey() {
+    const val = keyInput.value.trim();
+    if (!val) { setStatus('Paste your API key first.', 'error'); return; }
+    apiKey = val;
+    keyInput.value = '';
+    setStatus('Key stored — fetching models…', 'ok');
+    fetchModels();
+    fetchCoachPricing(); // parallel — gets per-token pricing for the cost estimator
+  }
+
+  reloadBtn.addEventListener('click', fetchModels);
+
+  // ── Fetch coach model pricing ────────────────────────────────────────────────────
+  // Runs in parallel with fetchModels so it doesn't block the key entry flow.
+  async function fetchCoachPricing() {
+    try {
+      const res  = await fetch('https://openrouter.ai/api/v1/models', {
+        headers: { 'Authorization': 'Bearer ' + apiKey }
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      const m    = (json.data || []).find(m => m.id === COACH_MODEL);
+      if (m) {
+        coachPricing.inp = parseFloat(m.pricing?.prompt || 0);
+        coachPricing.out = parseFloat(m.pricing?.completion || 0);
+      }
+    } catch (_) { /* silent — cost display just won't show pricing */ }
+  }
+
+  // ── Start Chatting ────────────────────────────────────────────────────────────
+  startBtn.addEventListener('click', startSession);
+
+  async function startSession() {
+    if (!apiKey || !modelSel.value || isBusy) return;
+
+    const selectedOpt    = modelSel.options[modelSel.selectedIndex];
+    const imageModelName = (selectedOpt?.text || 'selected image model').split('·')[0].trim();
+    const imageModelId   = modelSel.value;
+
+    // Build the session-scoped system prompt now that we know the image model
+    sessionSystemPrompt = buildSystemPrompt(imageModelName, imageModelId);
+
+    setBusy(true);
+    sessionLive = true;
+    startBtn.disabled = true;
+
+    chatEl.innerHTML = '';
+    apiMessages      = [];
+    displayHistory   = [];
+    setStatus('Connecting to your coach…', 'neutral');
+
+    const typingRow = appendTypingRow();
+
+    try {
+      // Hidden setup turn: not added to apiMessages or displayHistory.
+      // Gives the coach its persona, model identity, and prompts a warm intro.
+      const greeting = await callCoach([
+        { role: 'system', content: sessionSystemPrompt },
+        {
+          role: 'user',
+          content:
+            '[Session start — do not acknowledge this line]\n' +
+            'Greet the student. Briefly introduce yourself as their Image Prompt Tutor, ' +
+            'mention you are powered by ' + COACH_MODEL_DISPLAY + ', and that you will generate images ' +
+            'using ' + imageModelName + '. Then ask what kind of image they are imagining. ' +
+            'Warm, friendly, under 4 sentences.'
+        }
+      ]);
+
+      resolveTypingWithText(typingRow, greeting);
+      // Store greeting in both histories so the coach remembers its own intro in later turns
+      displayHistory.push({ role: 'assistant', text: greeting });
+      apiMessages.push({ role: 'assistant', content: greeting });
+
+      promptEl.disabled = false;
+      sendBtn.disabled  = false;
+      genBtn.disabled   = false;
+      promptEl.focus();
+      setStatus('Session started! Describe what you want to create.', 'ok');
+
+    } catch (err) {
+      resolveTypingWithError(typingRow, err.message);
+      sessionLive = false;
+      startBtn.disabled = false;
+      setStatus('Failed to start session — try again.', 'error');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // ── Chat rendering ────────────────────────────────────────────────────────────
+  function appendUserBubble(text) {
+    const row = document.createElement('div');
+    row.className = 'oic-row user';
+    const av = document.createElement('div');
+    av.className = 'oic-avatar user'; av.textContent = 'You';
+    const b = document.createElement('div');
+    b.className = 'oic-bubble'; b.textContent = text;
+    row.append(b, av);
+    chatEl.appendChild(row); scrollChat();
+  }
+
+  function appendTypingRow() {
+    const row = document.createElement('div');
+    row.className = 'oic-row';
+    const av = document.createElement('div');
+    av.className = 'oic-avatar'; av.textContent = 'AI';
+    const b = document.createElement('div');
+    b.className = 'oic-bubble';
+    b.innerHTML = '<div class="oic-typing"><span></span><span></span><span></span></div>';
+    row.append(av, b);
+    chatEl.appendChild(row); scrollChat();
+    return row;
+  }
+
+  function resolveTypingWithText(row, text) {
+    row.querySelector('.oic-bubble').innerHTML = md(text); scrollChat();
+  }
+
+  function resolveTypingWithImage(row, imageUrl, promptUsed) {
+    const b = row.querySelector('.oic-bubble');
+    const safe = promptUsed.replace(/"/g, '&quot;').slice(0, 120);
+    b.innerHTML =
+      '<img src="' + imageUrl + '" alt="' + safe + '" loading="lazy" />' +
+      '<small>Right-click → Save image as… to download.</small>';
+    scrollChat();
+  }
+
+  function resolveTypingWithError(row, msg) {
+    const b = row.querySelector('.oic-bubble');
+    b.style.color = '#fca5a5';
+    b.textContent = '⚠ ' + msg;
+    scrollChat();
+  }
+
+  function appendSystemNote(text) {
+    const row = document.createElement('div');
+    row.className = 'oic-row';
+    const av = document.createElement('div');
+    av.className = 'oic-avatar';
+    av.style.background = 'radial-gradient(circle, #f59e0b, #d97706)';
+    av.textContent = '⚙';
+    const b = document.createElement('div');
+    b.className = 'oic-bubble system'; b.textContent = text;
+    row.append(av, b);
+    chatEl.appendChild(row); scrollChat();
+  }
+
+  // ── Extract image URL from OpenRouter image response ──────────────────────────
+  function extractImageUrl(data) {
+    const msg = data?.choices?.[0]?.message;
+    if (Array.isArray(msg?.images) && msg.images.length) {
+      const u = msg.images[0]?.image_url?.url;
+      if (u) return u;
+    }
+    if (Array.isArray(msg?.content)) {
+      for (const p of msg.content) {
+        if (p.type === 'image_url' && p.image_url?.url) return p.image_url.url;
+      }
+    }
+    const d0 = data?.data?.[0];
+    if (d0?.url)      return d0.url;
+    if (d0?.b64_json) return 'data:image/png;base64,' + d0.b64_json;
+    return null;
+  }
+
+  // ── Update usage display ──────────────────────────────────────────────────────
+  function updateUsageDisplay() {
+    const total = sessionStats.promptTokens + sessionStats.completionTokens;
+    if (!total && !sessionStats.imageCount) { usageEl.innerHTML = ''; return; }
+
+    const cost = sessionStats.promptTokens     * coachPricing.inp
+               + sessionStats.completionTokens * coachPricing.out;
+    const costStr = (coachPricing.inp > 0)
+      ? ' · <span class="oic-usage-cost">~$' + cost.toFixed(4) + '</span>'
+      : '';
+
+    let html = '<div class="oic-usage-seg">'
+      + '💬 Coach: ' + total.toLocaleString() + ' tokens' + costStr
+      + '</div>';
+
+    if (sessionStats.imageCount) {
+      html += '<div class="oic-usage-seg">'
+        + '🖼️ ' + sessionStats.imageCount
+        + ' image' + (sessionStats.imageCount !== 1 ? 's' : '') + ' generated'
+        + '</div>';
+    }
+
+    usageEl.innerHTML = html;
+  }
+
+  // ── API callers ───────────────────────────────────────────────────────────────
+  async function callCoach(messages) {
+    currentAbort = new AbortController();
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: currentAbort.signal,
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type':  'application/json',
+        'HTTP-Referer':   window.location.origin || 'https://example.com',
+        'X-Title':        'FFA Image Prompt Tutor'
+      },
+      body: JSON.stringify({ model: COACH_MODEL, messages })
+    });
+    currentAbort = null;
+    if (!res.ok) {
+      let d = ''; try { d = (await res.json()).error?.message || ''; } catch (_) {}
+      throw new Error('Coach API ' + res.status + (d ? ': ' + d : ''));
+    }
+    const data = await res.json();
+    // Capture token usage for the live cost display
+    if (data.usage) {
+      sessionStats.promptTokens     += (data.usage.prompt_tokens     || 0);
+      sessionStats.completionTokens += (data.usage.completion_tokens || 0);
+      updateUsageDisplay();
+    }
+    return data.choices?.[0]?.message?.content || '';
+  }
+
+  async function callImageModel(prompt) {
+    const model = modelSel.value;
+    if (!model) throw new Error('No image model selected.');
+    const mods = modelMeta[model]?.modalities || ['image'];
+    currentAbort = new AbortController();
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: currentAbort.signal,
+      headers: {
+        'Authorization': 'Bearer ' + apiKey,
+        'Content-Type':  'application/json',
+        'HTTP-Referer':   window.location.origin || 'https://example.com',
+        'X-Title':        'FFA Image Prompt Tutor'
+      },
+      body: JSON.stringify({ model, modalities: mods, messages: [{ role: 'user', content: prompt }] })
+    });
+    currentAbort = null;
+    if (!res.ok) {
+      let d = ''; try { d = (await res.json()).error?.message || ''; } catch (_) {}
+      throw new Error('Image API ' + res.status + (d ? ': ' + d : ''));
+    }
+    return res.json();
+  }
+
+  // ── Main send ─────────────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const userText = promptEl.value.trim();
+    if (!userText || isBusy || !sessionLive) return;
+
+    setBusy(true);
+    promptEl.value = '';
+    setStatus('Thinking…', 'neutral');
+
+    appendUserBubble(userText);
+    displayHistory.push({ role: 'user', text: userText });
+    apiMessages.push({ role: 'user', content: userText });
+
+    const coachPayload = [{ role: 'system', content: sessionSystemPrompt }, ...apiMessages];
+    const typingRow    = appendTypingRow();
+
+    try {
+      const coachReply = await callCoach(coachPayload);
+      const genMatch   = coachReply.match(/^GENERATE:\s*(.+)$/mi);
+
+      if (genMatch) {
+        const imagePrompt = genMatch[1].trim();
+        const textBefore  = coachReply.slice(0, genMatch.index).trim();
+
+        if (textBefore) {
+          resolveTypingWithText(typingRow, textBefore);
+          displayHistory.push({ role: 'assistant', text: textBefore });
+          apiMessages.push({ role: 'assistant', content: textBefore });
+        } else {
+          resolveTypingWithText(typingRow, 'Great — generating your image now…');
+        }
+
+        appendSystemNote(
+          '⏳ Generating' + modelWaitHint() + ': "​' +
+          imagePrompt.slice(0, 80) + (imagePrompt.length > 80 ? '…' : '') + '"'
+        );
+        setStatus('Generating image…' + modelWaitHint(), 'neutral');
+        const imgTypingRow = appendTypingRow();
+
+        try {
+          const imgData  = await callImageModel(imagePrompt);
+          const imageUrl = extractImageUrl(imgData);
+          if (!imageUrl) {
+            console.warn('[oic] Image response:', JSON.stringify(imgData, null, 2));
+            throw new Error('No image in response. See console for raw output.');
+          }
+
+          resolveTypingWithImage(imgTypingRow, imageUrl, imagePrompt);
+          displayHistory.push({ role: 'assistant', text: '[Image generated]', imageUrl });
+          sessionStats.imageCount++;
+          updateUsageDisplay();
+
+          // Coach history: describe the image in text — never send the URL
+          const imageNote = '[Image generated successfully using prompt: "' + imagePrompt + '"]';
+          apiMessages.push({ role: 'assistant', content: 'GENERATE: ' + imagePrompt });
+
+          setStatus('Getting feedback…', 'neutral');
+          const feedbackPayload = [
+            { role: 'system', content: sessionSystemPrompt },
+            ...apiMessages,
+            { role: 'user', content: imageNote + ' Now ask if the student likes it and offer 2-3 specific modification suggestions.' }
+          ];
+
+          const feedbackRow   = appendTypingRow();
+          const feedbackReply = await callCoach(feedbackPayload);
+          resolveTypingWithText(feedbackRow, feedbackReply);
+
+          displayHistory.push({ role: 'assistant', text: feedbackReply });
+          apiMessages.push({ role: 'user',      content: imageNote });
+          apiMessages.push({ role: 'assistant', content: feedbackReply });
+
+          setStatus('Image ready! Reply to refine or try something new.', 'ok');
+
+        } catch (imgErr) {
+          resolveTypingWithError(imgTypingRow, imgErr.message);
+          setStatus('Image generation failed — see bubble.', 'error');
+        }
+
+      } else {
+        resolveTypingWithText(typingRow, coachReply);
+        displayHistory.push({ role: 'assistant', text: coachReply });
+        apiMessages.push({ role: 'assistant', content: coachReply });
+        setStatus('', 'neutral');
+      }
+
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        resolveTypingWithError(typingRow, 'Stopped.');
+        setStatus('Generation stopped.', 'neutral');
+      } else {
+        console.error('[oic]', err);
+        resolveTypingWithError(typingRow, err.message);
+        setStatus('Error — see bubble above.', 'error');
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // ── Generate quick-action ──────────────────────────────────────────────────────
+  // Sends the standard approval message so students don't have to type it.
+  genBtn.addEventListener('click', function () {
+    promptEl.value = 'I like your suggestion. Please generate the image.';
+    sendMessage();
+  });
+
+  // ── Clear ─────────────────────────────────────────────────────────────────────
+  clearBtn.addEventListener('click', function () {
+    apiMessages    = [];
+    displayHistory = [];
+    sessionStats   = { promptTokens: 0, completionTokens: 0, imageCount: 0 };
+    sessionLive    = false;
+    usageEl.innerHTML = '';
+    chatEl.innerHTML = '<div class="oic-empty">Session cleared. Click Start Chatting to begin a new session.</div>';
+    promptEl.disabled = true;
+    sendBtn.disabled  = true;
+    startBtn.disabled = !apiKey || !modelSel.value;
+    modelSel.disabled = false;
+    setStatus('', 'neutral');
+  });
+
+  // ── Export ZIP ────────────────────────────────────────────────────────────────
+  // Session transcript goes in session.md; each image is a separate file in images/.
+  // Image data URLs are extracted to binary — not embedded in the markdown.
+  exportBtn.addEventListener('click', async function () {
+    if (!displayHistory.length) { setStatus('Nothing to export yet.', 'error'); return; }
+    if (typeof JSZip === 'undefined') { setStatus('JSZip not loaded — check your connection.', 'error'); return; }
+
+    setStatus('Building ZIP…', 'neutral');
+    const date       = new Date().toISOString().slice(0, 10);
+    const modelLabel = (modelSel.options[modelSel.selectedIndex]?.text || 'Unknown').split('·')[0].trim();
+
+    const zip       = new JSZip();
+    const imgFolder = zip.folder('images');
+
+    let md_text = '# Image Prompt Tutor — Session Export\n\n';
+    md_text += '**Date:** ' + date + '  \n';
+    md_text += '**Coach:** ' + COACH_MODEL_DISPLAY + '  \n';
+    md_text += '**Image model:** ' + modelLabel + '\n\n---\n\n';
+
+    let imageIndex = 0;
+
+    for (const h of displayHistory) {
+      if (h.role === 'user') {
+        md_text += '**You:** ' + h.text + '\n\n';
+      } else if (h.imageUrl) {
+        imageIndex++;
+        const filename = 'image-' + String(imageIndex).padStart(3, '0') + '.png';
+
+        try {
+          if (h.imageUrl.startsWith('data:')) {
+            // Base64 data URL → extract binary
+            const base64 = h.imageUrl.split(',')[1];
+            imgFolder.file(filename, base64, { base64: true });
+          } else {
+            // Remote URL → fetch and store as binary
+            const imgRes = await fetch(h.imageUrl);
+            const buf    = await imgRes.arrayBuffer();
+            imgFolder.file(filename, buf);
+          }
+          md_text += '**AI:** *(Image generated — see images/' + filename + ')*\n\n';
+          md_text += '![Image ' + imageIndex + '](images/' + filename + ')\n\n';
+        } catch (fetchErr) {
+          md_text += '**AI:** *(Image could not be saved: ' + fetchErr.message + ')*\n\n';
+        }
+      } else {
+        md_text += '**AI:** ' + h.text + '\n\n';
+      }
+    }
+
+    zip.file('session.md', md_text);
+
+    try {
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'prompt-session-' + date + '.zip';
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus('ZIP downloaded — ' + imageIndex + ' image(s) + session.md', 'ok');
+    } catch (zipErr) {
+      setStatus('ZIP generation failed: ' + zipErr.message, 'error');
+    }
+  });
+
+  // ── Input events ──────────────────────────────────────────────────────────────
+  sendBtn.addEventListener('click', sendMessage);
+  promptEl.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+  });
+
+  // ── iframe height reporter ────────────────────────────────────────────────────
+  function postHeight() {
+    try { window.parent.postMessage({ type: 'ffa-resize', height: document.documentElement.scrollHeight }, '*'); }
+    catch (_) {}
+  }
+  window.addEventListener('load', postHeight);
+  new ResizeObserver(postHeight).observe(document.body);
+
+})();
+</script>
+
+</body>
+</html>
