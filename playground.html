@@ -363,11 +363,6 @@
         <section class="layout">
             <aside class="left panel">
                 <div>
-                    <label class="label" for="app-select">Quick Selector</label>
-                    <select id="app-select" class="select"></select>
-                </div>
-
-                <div>
                     <label class="label">Available Apps</label>
                     <div id="app-list" class="list"></div>
                 </div>
@@ -411,7 +406,6 @@
         const FALLBACK_TITLES = ["email-the-dean", "discord-invite", "resources", "tokens"];
 
         const elements = {
-            select: document.getElementById("app-select"),
             list: document.getElementById("app-list"),
             image: document.getElementById("preview-image"),
             caption: document.getElementById("thumb-caption"),
@@ -492,7 +486,6 @@
 
         function setSelected(slug) {
             selectedTitle = slug;
-            elements.select.value = slug;
             const paths = appPaths(slug);
             elements.frame.src = paths.html;
             elements.loadedLabel.textContent = `Loaded: ${paths.html}`;
@@ -527,14 +520,9 @@
         }
 
         function renderTitles() {
-            elements.select.innerHTML = "";
             elements.list.innerHTML = "";
 
             titles.forEach((slug) => {
-                const option = document.createElement("option");
-                option.value = slug;
-                option.textContent = formatTitle(slug);
-                elements.select.appendChild(option);
                 elements.list.appendChild(createListItem(slug));
             });
 
@@ -569,10 +557,6 @@
                 return FALLBACK_TITLES.slice();
             }
         }
-
-        elements.select.addEventListener("change", (event) => {
-            setSelected(event.target.value);
-        });
 
         elements.embedHeight.addEventListener("input", () => {
             updateEmbedCode();
