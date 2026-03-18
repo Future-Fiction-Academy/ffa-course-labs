@@ -233,51 +233,6 @@
             font-size: 1.1rem;
         }
 
-        .meta p {
-            margin: 7px 0 0;
-            color: #b9c6eb;
-            line-height: 1.4;
-            font-size: 0.95rem;
-        }
-
-        .meta code {
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.84rem;
-            color: #dbeafe;
-            background: rgba(30, 41, 59, 0.82);
-            padding: 4px 7px;
-            border-radius: 7px;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-        }
-
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            font-size: 0.84rem;
-            font-weight: 700;
-            color: #c4d1f6;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #64748b;
-        }
-
-        .dot.ok {
-            background: var(--ok);
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
-        }
-
-        .dot.missing {
-            background: var(--danger);
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
-        }
-
         .app-shell {
             min-height: 420px;
             display: flex;
@@ -303,6 +258,77 @@
             padding: 5px 9px;
             cursor: pointer;
             font-size: 0.82rem;
+        }
+
+        .embed-head {
+            padding: 10px 0 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            color: #c2d1f5;
+            font-size: 0.86rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .height-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #d7e2ff;
+            font-size: 0.84rem;
+            font-weight: 600;
+        }
+
+        .height-group input {
+            width: 90px;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.34);
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+            padding: 5px 8px;
+            font: inherit;
+        }
+
+        .embed-head button {
+            border: 1px solid rgba(96, 165, 250, 0.6);
+            background: rgba(37, 99, 235, 0.2);
+            color: #dbeafe;
+            border-radius: 8px;
+            padding: 5px 9px;
+            cursor: pointer;
+            font-size: 0.82rem;
+        }
+
+        .embed-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0 0;
+            height: 100%;
+        }
+
+        .embed-body p {
+            margin: 0;
+            color: #bfd0f5;
+            font-size: 0.89rem;
+        }
+
+        .embed-code {
+            flex: 1;
+            width: 100%;
+            min-height: 140px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background: rgba(2, 6, 23, 0.9);
+            color: #e2e8f0;
+            padding: 12px;
+            font-family: "Cascadia Code", Consolas, Menlo, Monaco, monospace;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            resize: vertical;
+            white-space: pre;
         }
 
         iframe {
@@ -356,11 +382,15 @@
 
                     <div class="meta">
                         <h2 id="preview-title">No app selected</h2>
-                        <p id="preview-description">Pick an app from the list to load it into the playground window.</p>
-                        <code id="preview-paths">html: — | screenshot: —</code>
-                        <div class="status">
-                            <span id="status-dot" class="dot"></span>
-                            <span id="status-text">Waiting for selection</span>
+                        <div class="embed-head">
+                            <label class="height-group" for="embed-height">
+                                Height
+                                <input id="embed-height" type="number" min="100" step="10" value="300">
+                            </label>
+                            <button id="copy-embed" type="button">Copy Embed Code</button>
+                        </div>
+                        <div class="embed-body">
+                            <textarea id="embed-code" class="embed-code" spellcheck="false" readonly></textarea>
                         </div>
                     </div>
                 </div>
@@ -386,15 +416,15 @@
             image: document.getElementById("preview-image"),
             caption: document.getElementById("thumb-caption"),
             previewTitle: document.getElementById("preview-title"),
-            previewDescription: document.getElementById("preview-description"),
-            previewPaths: document.getElementById("preview-paths"),
-            statusDot: document.getElementById("status-dot"),
-            statusText: document.getElementById("status-text"),
-            frame: document.getElementById("app-frame"),
             loadedLabel: document.getElementById("loaded-label"),
-            openNewTab: document.getElementById("open-new-tab")
+            frame: document.getElementById("app-frame"),
+            openNewTab: document.getElementById("open-new-tab"),
+            embedHeight: document.getElementById("embed-height"),
+            embedCode: document.getElementById("embed-code"),
+            copyEmbed: document.getElementById("copy-embed")
         };
 
+        const EMBED_BASE_URL = "https://future-fiction-academy.github.io/ffa-course-labs";
         let titles = [];
         let selectedTitle = "";
 
@@ -420,42 +450,44 @@
             };
         }
 
-        function setStatus(found, contextText) {
-            elements.statusDot.classList.remove("ok", "missing");
-            if (found === true) {
-                elements.statusDot.classList.add("ok");
-            } else if (found === false) {
-                elements.statusDot.classList.add("missing");
+        function buildEmbedCode(slug, height) {
+            const pretty = formatTitle(slug);
+            return `<iframe
+  src="${EMBED_BASE_URL}/${slug}.html"
+  width="100%"
+  height="${height}"
+  style="border:0; border-radius:12px; overflow:hidden;"
+  loading="lazy"
+  title="${pretty}">
+</iframe>`;
+        }
+
+        function updateEmbedCode() {
+            if (!selectedTitle) {
+                elements.embedCode.value = "";
+                return;
             }
-            elements.statusText.textContent = contextText;
+            const heightValue = Number.parseInt(elements.embedHeight.value, 10);
+            const safeHeight = Number.isFinite(heightValue) && heightValue >= 100 ? heightValue : 300;
+            elements.embedHeight.value = String(safeHeight);
+            elements.embedCode.value = buildEmbedCode(selectedTitle, safeHeight);
         }
 
         function updatePreview(slug, context) {
             if (!slug) {
                 elements.previewTitle.textContent = "No app selected";
-                elements.previewDescription.textContent = "Pick an app from the list to load it into the playground window.";
-                elements.previewPaths.textContent = "html: — | screenshot: —";
                 elements.image.removeAttribute("src");
                 elements.image.alt = "No screenshot selected";
                 elements.caption.textContent = "Hover an app title to preview its screenshot.";
-                setStatus(null, "Waiting for selection");
                 return;
             }
 
             const paths = appPaths(slug);
             const pretty = formatTitle(slug);
             elements.previewTitle.textContent = pretty;
-            elements.previewDescription.textContent = `Ready to launch ${pretty}. Hover to preview, click to load in the embedded playground.`;
-            elements.previewPaths.textContent = `html: ${paths.html} | screenshot: ${paths.screenshot}`;
             elements.image.src = paths.screenshot;
             elements.image.alt = `${pretty} screenshot`;
             elements.caption.textContent = `${pretty} screenshot preview`;
-
-            if (context === "hover") {
-                setStatus(null, "Previewing screenshot");
-            } else if (context === "selected") {
-                setStatus(true, `Loaded ${paths.html}`);
-            }
         }
 
         function setSelected(slug) {
@@ -464,6 +496,7 @@
             const paths = appPaths(slug);
             elements.frame.src = paths.html;
             elements.loadedLabel.textContent = `Loaded: ${paths.html}`;
+            updateEmbedCode();
             updatePreview(slug, "selected");
 
             Array.from(elements.list.children).forEach((button) => {
@@ -509,8 +542,9 @@
                 setSelected(titles[0]);
             } else {
                 selectedTitle = "";
-                elements.frame.removeAttribute("src");
                 elements.loadedLabel.textContent = "No app loaded";
+                elements.frame.removeAttribute("src");
+                elements.embedCode.value = "";
                 updatePreview("", "");
             }
         }
@@ -531,13 +565,33 @@
                 }
                 return cleaned;
             } catch (error) {
-                setStatus(false, `Could not read ${DATA_SOURCE}; using fallback list`);
+                console.warn(`Could not read ${DATA_SOURCE}; using fallback list`, error);
                 return FALLBACK_TITLES.slice();
             }
         }
 
         elements.select.addEventListener("change", (event) => {
             setSelected(event.target.value);
+        });
+
+        elements.embedHeight.addEventListener("input", () => {
+            updateEmbedCode();
+        });
+
+        elements.copyEmbed.addEventListener("click", async () => {
+            if (!selectedTitle) return;
+            try {
+                await navigator.clipboard.writeText(elements.embedCode.value);
+                elements.copyEmbed.textContent = "Copied!";
+                window.setTimeout(() => {
+                    elements.copyEmbed.textContent = "Copy Embed Code";
+                }, 1300);
+            } catch (error) {
+                elements.copyEmbed.textContent = "Copy Failed";
+                window.setTimeout(() => {
+                    elements.copyEmbed.textContent = "Copy Embed Code";
+                }, 1300);
+            }
         });
 
         elements.openNewTab.addEventListener("click", () => {
@@ -549,11 +603,10 @@
         elements.image.addEventListener("error", () => {
             elements.caption.textContent = "Screenshot not found for this title.";
             elements.image.removeAttribute("src");
-            setStatus(false, "Missing screenshot file");
         });
 
         elements.frame.addEventListener("error", () => {
-            setStatus(false, "Could not load selected app");
+            elements.loadedLabel.textContent = "Could not load selected app";
         });
 
         async function init() {
