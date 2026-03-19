@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM Modalities Matching Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --card: #ffffff;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --accent-2: #a78bfa;
+      --success: #16a34a;
+      --error: #dc2626;
+      --warning: #f59e0b;
+      --shadow: 0 10px 30px rgba(0,0,0,0.2);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1222 0%, #111827 100%);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(96,165,250,0.18), rgba(167,139,250,0.18));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.9rem, 3vw, 2.8rem);
+      line-height: 1.1;
+    }
+
+    .sub {
+      color: var(--text);
+      opacity: 0.92;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      max-width: 900px;
+    }
+
+    .directions {
+      margin-top: 16px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .quiz-shell {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .bank, .board, .results {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .bank {
+      padding: 18px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .bank.over {
+      border-color: rgba(96,165,250,0.75);
+      background: rgba(96,165,250,0.08);
+    }
+
+    .panel-title {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .panel-copy {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .draggable {
+      border: 1px solid rgba(255,255,255,0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border-radius: 16px;
+      padding: 14px 14px;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .draggable:hover {
+      transform: translateY(-1px);
+      border-color: rgba(96,165,250,0.65);
+    }
+
+    .draggable.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+      cursor: grabbing;
+    }
+
+    .tag {
+      font-size: 0.8rem;
+      color: #dbeafe;
+      background: rgba(96,165,250,0.18);
+      padding: 5px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .board {
+      padding: 18px;
+    }
+
+    .task-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .task-card {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 16px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .task-card.correct {
+      border-color: rgba(22,163,74,0.75);
+      background: rgba(22,163,74,0.08);
+    }
+
+    .task-card.incorrect {
+      border-color: rgba(220,38,38,0.75);
+      background: rgba(220,38,38,0.08);
+    }
+
+    .task-top {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .task-text {
+      font-size: 1rem;
+      line-height: 1.5;
+      color: var(--text);
+      padding-top: 3px;
+    }
+
+    .dropzone {
+      min-height: 66px;
+      border: 2px dashed rgba(148,163,184,0.45);
+      border-radius: 16px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(15,23,42,0.5);
+      color: var(--muted);
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .dropzone.over {
+      border-color: var(--accent);
+      background: rgba(96,165,250,0.08);
+    }
+
+    .dropzone.filled {
+      justify-content: stretch;
+      padding: 0;
+      border-style: solid;
+      border-color: rgba(255,255,255,0.08);
+      background: transparent;
+    }
+
+    .dropzone .draggable {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(96,165,250,0.16), rgba(167,139,250,0.16));
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .feedback.show { display: block; }
+    .feedback.correct {
+      background: rgba(22,163,74,0.12);
+      border: 1px solid rgba(22,163,74,0.5);
+      color: #dcfce7;
+    }
+    .feedback.incorrect {
+      background: rgba(220,38,38,0.12);
+      border: 1px solid rgba(220,38,38,0.5);
+      color: #fee2e2;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 0.97rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .results {
+      margin-top: 22px;
+      padding: 18px;
+      display: none;
+    }
+    .results.show { display: block; }
+
+    .score {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .score-note {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .legend {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .legend span {
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .quiz-shell {
+        grid-template-columns: 1fr;
+      }
+      .bank {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Interactive Quiz: Match the Modality to the Task</h1>
+      <p class="sub">Drag each modality card into the best matching task. When you’re ready, check your answers to get instant feedback and a short explanation for each one.</p>
+      <p class="directions">Tip: This exercise is about choosing the most sensible <strong>input → output</strong> pattern for the job. One item has two good possibilities, so the quiz accepts either answer.</p>
+    </section>
+
+    <section class="quiz-shell">
+      <aside id="bankPanel" class="bank">
+        <h2 class="panel-title">Modality Cards</h2>
+        <p class="panel-copy">Drag these into the matching boxes, and drag any answer card back here anytime to revise.</p>
+        <div id="optionBank" class="option-list"></div>
+      </aside>
+
+      <section class="board">
+        <h2 class="panel-title">Creative Tasks</h2>
+        <p class="panel-copy">Match each author task to the modality or modality pair that makes the most sense.</p>
+        <div id="taskGrid" class="task-grid"></div>
+
+        <div class="controls">
+          <button id="checkBtn" class="primary">Check My Answers</button>
+          <button id="resetBtn" class="secondary">Reset Quiz</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="results" class="results">
+      <div id="score" class="score"></div>
+      <div id="scoreNote" class="score-note"></div>
+      <div class="legend">
+        <span>Text → Text = writing, outlining, brainstorming</span>
+        <span>Image → Text = analysis or feedback on a visual</span>
+        <span>Audio → Text = dictation or transcription</span>
+        <span>Text → Audio = listen back to your writing</span>
+        <span>Text → Video / Text → Image = visual promo creation</span>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const options = [
+      { id: 'text-text', label: 'Text → Text', tag: 'Writing & planning' },
+      { id: 'image-text-1', label: 'Image → Text', tag: 'Analyze visuals' },
+      { id: 'audio-text', label: 'Audio → Text', tag: 'Speech to notes' },
+      { id: 'text-video', label: 'Text → Video', tag: 'Generate teaser clips' },
+      { id: 'text-audio', label: 'Text → Audio', tag: 'Read writing aloud' },
+      { id: 'image-text-2', label: 'Image → Text', tag: 'Handwriting to usable text' },
+      { id: 'text-image', label: 'Text → Image', tag: 'Create promo visuals' }
+    ];
+
+    const tasks = [
+      {
+        id: 't1',
+        prompt: 'You want to brainstorm chapter ideas from a rough premise.',
+        accepted: ['text-text'],
+        explanation: 'A rough premise given in text is best developed into chapter ideas, outlines, or scene possibilities through a text-to-text workflow.'
+      },
+      {
+        id: 't2',
+        prompt: 'You want feedback on a draft cover concept.',
+        accepted: ['image-text-1'],
+        explanation: 'A cover concept is visual input. You want the AI to analyze that image and respond with feedback in words, which makes this image-to-text.'
+      },
+      {
+        id: 't3',
+        prompt: 'You want to capture a story idea while driving.',
+        accepted: ['audio-text'],
+        explanation: 'Speaking your idea aloud and converting it into usable notes or a transcript is a classic audio-to-text workflow.'
+      },
+      {
+        id: 't4',
+        prompt: 'You want to create a short promotional teaser for social media.',
+        accepted: ['text-video', 'text-image'],
+        explanation: 'A promotional teaser can reasonably be a short generated video or a strong visual image for social media, so this quiz accepts either text-to-video or text-to-image.'
+      },
+      {
+        id: 't5',
+        prompt: 'You want to hear whether your dialogue sounds natural out loud.',
+        accepted: ['text-audio'],
+        explanation: 'You already have the dialogue in text, and you want to hear it spoken back, so this is text-to-audio.'
+      },
+      {
+        id: 't6',
+        prompt: 'You want to turn a handwritten page of notes into usable material.',
+        accepted: ['image-text-2'],
+        explanation: 'A handwritten page is captured as an image, then turned into usable written output. That makes it image-to-text.'
+      }
+    ];
+
+    const bankPanel = document.getElementById('bankPanel');
+    const optionBank = document.getElementById('optionBank');
+    const taskGrid = document.getElementById('taskGrid');
+    const checkBtn = document.getElementById('checkBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultsEl = document.getElementById('results');
+    const scoreEl = document.getElementById('score');
+    const scoreNoteEl = document.getElementById('scoreNote');
+
+    let draggedId = null;
+
+    function resetTaskCardState(taskCard) {
+      if (!taskCard) return;
+      taskCard.classList.remove('correct', 'incorrect');
+      const feedback = taskCard.querySelector('.feedback');
+      if (!feedback) return;
+      feedback.className = 'feedback';
+      feedback.textContent = '';
+    }
+
+    function clearDropzoneIfEmpty(zone) {
+      if (!zone || !zone.classList.contains('dropzone')) return;
+      if (zone.querySelector('.draggable')) return;
+      zone.classList.remove('filled', 'over');
+      zone.textContent = 'Drop a modality card here';
+    }
+
+    function moveCardToBank(cardEl) {
+      if (!cardEl) return;
+      const sourceZone = cardEl.closest('.dropzone');
+      optionBank.appendChild(cardEl);
+      clearDropzoneIfEmpty(sourceZone);
+      resetTaskCardState(sourceZone?.closest('.task-card'));
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function createCard(option) {
+      const div = document.createElement('div');
+      div.className = 'draggable';
+      div.draggable = true;
+      div.id = option.id;
+      div.dataset.label = option.label;
+      div.innerHTML = `<span>${option.label}</span><span class="tag">${option.tag}</span>`;
+
+      div.addEventListener('dragstart', () => {
+        draggedId = option.id;
+        div.classList.add('dragging');
+      });
+
+      div.addEventListener('dragend', () => {
+        div.classList.remove('dragging');
+      });
+
+      return div;
+    }
+
+    function renderBank() {
+      optionBank.innerHTML = '';
+      shuffle(options).forEach(option => optionBank.appendChild(createCard(option)));
+    }
+
+    function renderTasks() {
+      taskGrid.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.dataset.taskId = task.id;
+
+        const top = document.createElement('div');
+        top.className = 'task-top';
+        top.innerHTML = `
+          <div class="num">${index + 1}</div>
+          <div class="task-text">${task.prompt}</div>
+        `;
+
+        const dropzone = document.createElement('div');
+        dropzone.className = 'dropzone';
+        dropzone.dataset.taskId = task.id;
+        dropzone.innerHTML = 'Drop a modality card here';
+
+        dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropzone.classList.add('over');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+          dropzone.classList.remove('over');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('over');
+          if (!draggedId) return;
+          const draggedEl = document.getElementById(draggedId);
+          if (!draggedEl) return;
+
+          const sourceZone = draggedEl.closest('.dropzone');
+
+          const existing = dropzone.querySelector('.draggable');
+          if (existing) {
+            moveCardToBank(existing);
+          }
+
+          dropzone.innerHTML = '';
+          dropzone.appendChild(draggedEl);
+          dropzone.classList.add('filled');
+          clearDropzoneIfEmpty(sourceZone);
+
+          const parentCard = dropzone.closest('.task-card');
+          resetTaskCardState(parentCard);
+          resetTaskCardState(sourceZone?.closest('.task-card'));
+        });
+
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback';
+
+        card.appendChild(top);
+        card.appendChild(dropzone);
+        card.appendChild(feedback);
+        taskGrid.appendChild(card);
+      });
+
+      bankPanel.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        bankPanel.classList.add('over');
+      });
+
+      bankPanel.addEventListener('dragleave', (e) => {
+        if (!bankPanel.contains(e.relatedTarget)) {
+          bankPanel.classList.remove('over');
+        }
+      });
+
+      bankPanel.addEventListener('drop', (e) => {
+        e.preventDefault();
+        bankPanel.classList.remove('over');
+        if (!draggedId) return;
+        const draggedEl = document.getElementById(draggedId);
+        if (!draggedEl) return;
+        moveCardToBank(draggedEl);
+      });
+    }
+
+    function checkAnswers() {
+      let correctCount = 0;
+
+      tasks.forEach(task => {
+        const card = document.querySelector(`.task-card[data-task-id="${task.id}"]`);
+        const zone = card.querySelector('.dropzone');
+        const placed = zone.querySelector('.draggable');
+        const feedback = card.querySelector('.feedback');
+
+        card.classList.remove('correct', 'incorrect');
+        feedback.className = 'feedback show';
+
+        if (!placed) {
+          card.classList.add('incorrect');
+          feedback.classList.add('incorrect');
+          feedback.innerHTML = `<strong>Not quite yet.</strong> You haven’t placed a modality card here yet. ${task.explanation}`;
+          return;
+        }
+
+        const placedId = placed.id;
+        const isCorrect = task.accepted.includes(placedId);
+
+        if (isCorrect) {
+          correctCount++;
+          card.classList.add('correct');
+          feedback.classList.add('correct');
+          feedback.innerHTML = `<strong>Correct.</strong> ${task.explanation}`;
+        } else {
+          card.classList.add('incorrect');
+          feedback.classList.add('incorrect');
+          const acceptedLabels = task.accepted
+            .map(id => options.find(opt => opt.id === id)?.label)
+            .join(' or ');
+          feedback.innerHTML = `<strong>Almost.</strong> A better match is <strong>${acceptedLabels}</strong>. ${task.explanation}`;
+        }
+      });
+
+      const total = tasks.length;
+      resultsEl.classList.add('show');
+      scoreEl.textContent = `Score: ${correctCount} / ${total}`;
+
+      if (correctCount === total) {
+        scoreNoteEl.textContent = 'Excellent work. You matched every task to a strong modality choice, which means you are already thinking like a practical multimodal creator.';
+      } else if (correctCount >= 4) {
+        scoreNoteEl.textContent = 'Nice job. You have a solid handle on modality matching. Review the feedback to sharpen the few edge cases.';
+      } else {
+        scoreNoteEl.textContent = 'Good start. The feedback below will help reinforce the logic behind each modality choice.';
+      }
+
+      resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function resetQuiz() {
+      resultsEl.classList.remove('show');
+      document.querySelectorAll('.task-card').forEach(card => {
+        card.classList.remove('correct', 'incorrect');
+        const feedback = card.querySelector('.feedback');
+        feedback.className = 'feedback';
+        feedback.textContent = '';
+      });
+
+      renderBank();
+      document.querySelectorAll('.dropzone').forEach(zone => {
+        zone.classList.remove('filled', 'over');
+        zone.innerHTML = 'Drop a modality card here';
+      });
+    }
+
+    renderBank();
+    renderTasks();
+
+    checkBtn.addEventListener('click', checkAnswers);
+    resetBtn.addEventListener('click', resetQuiz);
+  </script>
+</body>
+</html>
