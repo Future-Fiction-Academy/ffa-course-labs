@@ -1,0 +1,678 @@
+<div id="ffa-prompt-builder-widget"></div>
+
+<style>
+  #ffa-prompt-builder-widget {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1f2937;
+    max-width: 1100px;
+    margin: 24px auto;
+  }
+
+  #ffa-prompt-builder-widget * {
+    box-sizing: border-box;
+  }
+
+  .ffa-pb-wrap {
+    border: 1px solid #dbe3ea;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+
+  .ffa-pb-header {
+    padding: 24px 24px 18px;
+    background: linear-gradient(135deg, #0f172a, #1d4ed8);
+    color: white;
+  }
+
+  .ffa-pb-header h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  .ffa-pb-header p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    opacity: 0.95;
+  }
+
+  .ffa-pb-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .ffa-pb-panel {
+    padding: 22px;
+  }
+
+  .ffa-pb-panel-left {
+    border-right: 1px solid #e5e7eb;
+    background: #f8fafc;
+  }
+
+  .ffa-pb-section-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 16px;
+    color: #0f172a;
+  }
+
+  .ffa-pb-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .ffa-pb-field {
+    margin-bottom: 14px;
+  }
+
+  .ffa-pb-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .ffa-pb-label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #334155;
+  }
+
+  .ffa-pb-input,
+  .ffa-pb-select,
+  .ffa-pb-textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    background: white;
+    color: #111827;
+  }
+
+  .ffa-pb-textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  .ffa-pb-small {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-top: 5px;
+  }
+
+  .ffa-pb-checkrow {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 8px 0 18px;
+    font-size: 14px;
+    color: #334155;
+  }
+
+  .ffa-pb-checkrow input {
+    margin-top: 2px;
+  }
+
+  .ffa-pb-btnrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .ffa-pb-btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.04s ease, opacity 0.2s ease;
+  }
+
+  .ffa-pb-btn:active {
+    transform: translateY(1px);
+  }
+
+  .ffa-pb-btn-primary {
+    background: #2563eb;
+    color: white;
+  }
+
+  .ffa-pb-btn-secondary {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .ffa-pb-output-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .ffa-pb-tab {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #0f172a;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .ffa-pb-tab.active {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+  }
+
+  .ffa-pb-output-card {
+    border: 1px solid #dbe3ea;
+    border-radius: 14px;
+    padding: 16px;
+    background: #ffffff;
+    margin-bottom: 16px;
+  }
+
+  .ffa-pb-output-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 8px;
+    color: #0f172a;
+  }
+
+  .ffa-pb-output-desc {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+
+  .ffa-pb-output {
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #111827;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 260px;
+  }
+
+  .ffa-pb-helper {
+    margin-top: 14px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .ffa-pb-helper h4 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #0f172a;
+  }
+
+  .ffa-pb-helper ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+
+  .ffa-pb-helper li {
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #334155;
+  }
+
+  .ffa-pb-copy {
+    margin-top: 10px;
+  }
+
+  .ffa-pb-status {
+    font-size: 12px;
+    color: #16a34a;
+    margin-left: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .ffa-pb-body {
+      grid-template-columns: 1fr;
+    }
+
+    .ffa-pb-panel-left {
+      border-right: 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .ffa-pb-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+(function () {
+  var mount = document.getElementById("ffa-prompt-builder-widget");
+  if (!mount) return;
+
+  mount.innerHTML = `
+    <div class="ffa-pb-wrap">
+      <div class="ffa-pb-header">
+        <h2>🧪 Prompt Builder Lab</h2>
+        <p>
+          Turn a rough goal into a better AI prompt. Fill out the fields below and generate a
+          simple prompt, a stronger structured prompt, and a reusable template you can adapt later.
+        </p>
+      </div>
+
+      <div class="ffa-pb-body">
+        <div class="ffa-pb-panel ffa-pb-panel-left">
+          <h3 class="ffa-pb-section-title">Build Your Prompt</h3>
+
+          <div class="ffa-pb-grid">
+            <div class="ffa-pb-field full">
+              <label class="ffa-pb-label" for="pb-goal">What do you want help with?</label>
+              <textarea id="pb-goal" class="ffa-pb-textarea" placeholder="Example: I want help revising a tense reunion scene between two estranged sisters."></textarea>
+              <div class="ffa-pb-small">Describe the real task in plain English.</div>
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-taskType">Task Type</label>
+              <select id="pb-taskType" class="ffa-pb-select">
+                <option value="">Choose one</option>
+                <option>Brainstorming</option>
+                <option>Outlining</option>
+                <option>Scene Writing</option>
+                <option>Revision Feedback</option>
+                <option>Developmental Editing</option>
+                <option>Line Editing</option>
+                <option>Blurb Writing</option>
+                <option>Marketing Copy</option>
+                <option>Worldbuilding</option>
+                <option>Character Development</option>
+                <option>Continuity Check</option>
+                <option>Prompt Creation</option>
+              </select>
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-genre">Genre / Project Type</label>
+              <input id="pb-genre" class="ffa-pb-input" type="text" placeholder="Example: gothic fantasy, romance, thriller" />
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-tone">Tone / Voice</label>
+              <input id="pb-tone" class="ffa-pb-input" type="text" placeholder="Example: tense, intimate, cinematic, funny" />
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-audience">Audience / Reader</label>
+              <input id="pb-audience" class="ffa-pb-input" type="text" placeholder="Example: adult fantasy readers, newsletter subscribers" />
+            </div>
+
+            <div class="ffa-pb-field full">
+              <label class="ffa-pb-label" for="pb-context">Important Context</label>
+              <textarea id="pb-context" class="ffa-pb-textarea" placeholder="Example: The protagonist has just learned her sister betrayed the family, but the full truth is still hidden."></textarea>
+              <div class="ffa-pb-small">Give the AI the background it needs to do the task well.</div>
+            </div>
+
+            <div class="ffa-pb-field full">
+              <label class="ffa-pb-label" for="pb-focus">What should the AI focus on?</label>
+              <input id="pb-focus" class="ffa-pb-input" type="text" placeholder="Example: pacing, tension, emotional clarity, subtext" />
+            </div>
+
+            <div class="ffa-pb-field full">
+              <label class="ffa-pb-label" for="pb-avoid">What should it avoid or preserve?</label>
+              <input id="pb-avoid" class="ffa-pb-input" type="text" placeholder="Example: avoid clichés, do not rewrite everything, preserve the protagonist's voice" />
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-format">Output Format</label>
+              <select id="pb-format" class="ffa-pb-select">
+                <option value="">Choose one</option>
+                <option>Bullet points</option>
+                <option>Short paragraph</option>
+                <option>Step-by-step breakdown</option>
+                <option>Table</option>
+                <option>Three options</option>
+                <option>Five options</option>
+                <option>Scene</option>
+                <option>Outline</option>
+                <option>Checklist</option>
+                <option>Labeled sections</option>
+              </select>
+            </div>
+
+            <div class="ffa-pb-field">
+              <label class="ffa-pb-label" for="pb-length">Length / Scope</label>
+              <input id="pb-length" class="ffa-pb-input" type="text" placeholder="Example: 500 words, 5 bullet points, 3 options" />
+            </div>
+
+            <div class="ffa-pb-field full">
+              <label class="ffa-pb-label" for="pb-quality">What would make the result good?</label>
+              <textarea id="pb-quality" class="ffa-pb-textarea" placeholder="Example: Make the ideas distinct, commercially viable, and emotionally compelling."></textarea>
+            </div>
+          </div>
+
+          <label class="ffa-pb-checkrow">
+            <input id="pb-templateMode" type="checkbox" />
+            <span>I want the reusable version to include placeholders so I can use it again later.</span>
+          </label>
+
+          <div class="ffa-pb-btnrow">
+            <button class="ffa-pb-btn ffa-pb-btn-primary" id="pb-generateBtn">Generate Prompts</button>
+            <button class="ffa-pb-btn ffa-pb-btn-secondary" id="pb-fillExampleBtn">Load Example</button>
+            <button class="ffa-pb-btn ffa-pb-btn-secondary" id="pb-clearBtn">Clear</button>
+          </div>
+
+          <div class="ffa-pb-helper">
+            <h4>How to use this lab</h4>
+            <ul>
+              <li>Start with the real task you want help with.</li>
+              <li>Give the AI enough context to do the job well.</li>
+              <li>Add boundaries so the result does not drift.</li>
+              <li>Ask for a format that will be easy to use.</li>
+              <li>Compare the simple and stronger versions to see what changed.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="ffa-pb-panel">
+          <h3 class="ffa-pb-section-title">Your Prompt Outputs</h3>
+
+          <div class="ffa-pb-output-tabs">
+            <button class="ffa-pb-tab active" data-target="simple">Simple Prompt</button>
+            <button class="ffa-pb-tab" data-target="structured">Structured Prompt</button>
+            <button class="ffa-pb-tab" data-target="template">Reusable Template</button>
+          </div>
+
+          <div class="ffa-pb-output-card" id="panel-simple">
+            <div class="ffa-pb-output-title">Simple Prompt</div>
+            <p class="ffa-pb-output-desc">A straightforward version you can use quickly.</p>
+            <div class="ffa-pb-output" id="pb-output-simple">Fill out the form and click “Generate Prompts.”</div>
+            <div class="ffa-pb-copy">
+              <button class="ffa-pb-btn ffa-pb-btn-secondary" data-copy="pb-output-simple">Copy Simple Prompt</button>
+              <span class="ffa-pb-status" id="pb-status-simple"></span>
+            </div>
+          </div>
+
+          <div class="ffa-pb-output-card" id="panel-structured" style="display:none;">
+            <div class="ffa-pb-output-title">Structured Prompt</div>
+            <p class="ffa-pb-output-desc">A more robust version using task, context, constraints, format, and quality bar.</p>
+            <div class="ffa-pb-output" id="pb-output-structured">Your structured prompt will appear here.</div>
+            <div class="ffa-pb-copy">
+              <button class="ffa-pb-btn ffa-pb-btn-secondary" data-copy="pb-output-structured">Copy Structured Prompt</button>
+              <span class="ffa-pb-status" id="pb-status-structured"></span>
+            </div>
+          </div>
+
+          <div class="ffa-pb-output-card" id="panel-template" style="display:none;">
+            <div class="ffa-pb-output-title">Reusable Template Prompt</div>
+            <p class="ffa-pb-output-desc">A version designed to be reused across similar tasks.</p>
+            <div class="ffa-pb-output" id="pb-output-template">Your reusable template will appear here.</div>
+            <div class="ffa-pb-copy">
+              <button class="ffa-pb-btn ffa-pb-btn-secondary" data-copy="pb-output-template">Copy Template Prompt</button>
+              <span class="ffa-pb-status" id="pb-status-template"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  function getValue(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+
+  function getChecked(id) {
+    var el = document.getElementById(id);
+    return !!(el && el.checked);
+  }
+
+  function safeSentence(text, fallback) {
+    return text ? text : fallback;
+  }
+
+  function maybeLine(label, value, end) {
+    if (!value) return "";
+    return label + value + (end || "\n");
+  }
+
+  function buildOutputs() {
+    var goal = getValue("pb-goal");
+    var taskType = getValue("pb-taskType");
+    var genre = getValue("pb-genre");
+    var tone = getValue("pb-tone");
+    var audience = getValue("pb-audience");
+    var context = getValue("pb-context");
+    var focus = getValue("pb-focus");
+    var avoid = getValue("pb-avoid");
+    var format = getValue("pb-format");
+    var length = getValue("pb-length");
+    var quality = getValue("pb-quality");
+    var templateMode = getChecked("pb-templateMode");
+
+    if (!goal) {
+      document.getElementById("pb-output-simple").textContent =
+        "Please fill in the “What do you want help with?” field first.";
+      document.getElementById("pb-output-structured").textContent =
+        "Please fill in the “What do you want help with?” field first.";
+      document.getElementById("pb-output-template").textContent =
+        "Please fill in the “What do you want help with?” field first.";
+      return;
+    }
+
+    var simpleParts = [];
+    simpleParts.push("Help me with this task: " + goal + ".");
+    if (taskType) simpleParts.push("This is a " + taskType.toLowerCase() + " task.");
+    if (genre) simpleParts.push("The genre or project type is " + genre + ".");
+    if (tone) simpleParts.push("Use a " + tone + " tone.");
+    if (audience) simpleParts.push("The intended audience is " + audience + ".");
+    if (context) simpleParts.push("Important context: " + context);
+    if (focus) simpleParts.push("Focus especially on " + focus + ".");
+    if (avoid) simpleParts.push("Please avoid or preserve the following: " + avoid + ".");
+    if (format || length) {
+      var formatSentence = "Give me the response";
+      if (format) formatSentence += " as " + format.toLowerCase();
+      if (length) formatSentence += (format ? " with " : " with ") + length;
+      formatSentence += ".";
+      simpleParts.push(formatSentence);
+    }
+    if (quality) simpleParts.push("A good result should " + quality.charAt(0).toLowerCase() + quality.slice(1).replace(/\.$/, "") + ".");
+    var simplePrompt = simpleParts.join(" ");
+
+    var structured = "";
+    structured += "Act as a helpful AI assistant for an author.\n\n";
+    structured += "Task:\n";
+    structured += safeSentence(goal, "[Describe the task here.]") + "\n\n";
+
+    structured += "Project Context:\n";
+    structured += maybeLine("- Task type: ", taskType, "\n");
+    structured += maybeLine("- Genre / project type: ", genre, "\n");
+    structured += maybeLine("- Tone / voice: ", tone, "\n");
+    structured += maybeLine("- Audience: ", audience, "\n");
+    if (context) {
+      structured += "- Important context: " + context + "\n";
+    }
+    if (!taskType && !genre && !tone && !audience && !context) {
+      structured += "- [Add any background information the AI needs to do the task well.]\n";
+    }
+
+    structured += "\nFocus:\n";
+    if (focus) {
+      structured += "- Pay special attention to " + focus + ".\n";
+    } else {
+      structured += "- [Add the main areas you want the AI to focus on.]\n";
+    }
+
+    structured += "\nConstraints / Guardrails:\n";
+    if (avoid) {
+      structured += "- " + avoid + "\n";
+    } else {
+      structured += "- [Add anything the AI should avoid, preserve, or limit.]\n";
+    }
+
+    structured += "\nOutput Format:\n";
+    if (format || length) {
+      structured += "- Return the answer";
+      if (format) structured += " as " + format.toLowerCase();
+      if (length) structured += " with " + length;
+      structured += ".\n";
+    } else {
+      structured += "- [Specify the format you want back: bullet points, table, scene, outline, etc.]\n";
+    }
+
+    structured += "\nQuality Bar:\n";
+    if (quality) {
+      structured += "- A strong result should " + quality.replace(/\.$/, "") + ".\n";
+    } else {
+      structured += "- [Explain what would make the response useful, strong, or successful.]\n";
+    }
+
+    structured += "\nPlease complete the task accordingly.";
+
+    var tTask = templateMode ? "[describe the task]" : safeSentence(goal, "[describe the task]");
+    var tType = templateMode ? "[task type]" : (taskType || "[task type]");
+    var tGenre = templateMode ? "[genre or project type]" : (genre || "[genre or project type]");
+    var tTone = templateMode ? "[tone or voice]" : (tone || "[tone or voice]");
+    var tAudience = templateMode ? "[audience]" : (audience || "[audience]");
+    var tContext = templateMode ? "[important context]" : (context || "[important context]");
+    var tFocus = templateMode ? "[main priorities]" : (focus || "[main priorities]");
+    var tAvoid = templateMode ? "[what to avoid or preserve]" : (avoid || "[what to avoid or preserve]");
+    var tFormat = templateMode ? "[preferred output format]" : (format || "[preferred output format]");
+    var tLength = templateMode ? "[length or scope]" : (length || "[length or scope]");
+    var tQuality = templateMode ? "[what would make this result good]" : (quality || "[what would make this result good]");
+
+    var template = "";
+    template += "Act as a helpful AI assistant for an author.\n\n";
+    template += "I want help with the following task: " + tTask + ".\n\n";
+    template += "Here is the relevant context:\n";
+    template += "- Task type: " + tType + "\n";
+    template += "- Genre / project type: " + tGenre + "\n";
+    template += "- Tone / voice: " + tTone + "\n";
+    template += "- Audience: " + tAudience + "\n";
+    template += "- Important context: " + tContext + "\n\n";
+    template += "Please focus especially on: " + tFocus + ".\n";
+    template += "Please avoid or preserve the following: " + tAvoid + ".\n\n";
+    template += "Return the result as: " + tFormat + ".\n";
+    template += "Length / scope: " + tLength + ".\n\n";
+    template += "A good result should: " + tQuality + ".\n\n";
+    template += "Before answering, make sure the output is clear, useful, and aligned with the task.";
+
+    document.getElementById("pb-output-simple").textContent = simplePrompt;
+    document.getElementById("pb-output-structured").textContent = structured;
+    document.getElementById("pb-output-template").textContent = template;
+  }
+
+  function setTab(target) {
+    var tabs = mount.querySelectorAll(".ffa-pb-tab");
+    tabs.forEach(function (tab) {
+      tab.classList.toggle("active", tab.getAttribute("data-target") === target);
+    });
+
+    var panels = ["simple", "structured", "template"];
+    panels.forEach(function (name) {
+      var panel = document.getElementById("panel-" + name);
+      if (panel) panel.style.display = (name === target) ? "block" : "none";
+    });
+  }
+
+  function copyText(elementId, statusId) {
+    var el = document.getElementById(elementId);
+    var status = document.getElementById(statusId);
+    if (!el) return;
+
+    var text = el.textContent || "";
+    if (!text) return;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        if (status) {
+          status.textContent = "Copied!";
+          setTimeout(function () { status.textContent = ""; }, 1800);
+        }
+      });
+    } else {
+      var temp = document.createElement("textarea");
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(temp);
+      if (status) {
+        status.textContent = "Copied!";
+        setTimeout(function () { status.textContent = ""; }, 1800);
+      }
+    }
+  }
+
+  document.getElementById("pb-generateBtn").addEventListener("click", function () {
+    buildOutputs();
+  });
+
+  document.getElementById("pb-fillExampleBtn").addEventListener("click", function () {
+    document.getElementById("pb-goal").value = "I want help getting revision feedback on a tense reunion scene between two estranged sisters.";
+    document.getElementById("pb-taskType").value = "Revision Feedback";
+    document.getElementById("pb-genre").value = "gothic fantasy";
+    document.getElementById("pb-tone").value = "tense, intimate, emotionally restrained";
+    document.getElementById("pb-audience").value = "adult fantasy readers";
+    document.getElementById("pb-context").value = "One sister believes the other betrayed the family, but the full truth is still hidden. The scene should increase tension and deepen mistrust.";
+    document.getElementById("pb-focus").value = "pacing, emotional tension, subtext, and clarity of character motivation";
+    document.getElementById("pb-avoid").value = "do not rewrite the whole scene, avoid melodrama, preserve the protagonist's voice";
+    document.getElementById("pb-format").value = "Bullet points";
+    document.getElementById("pb-length").value = "5 to 7 specific revision notes";
+    document.getElementById("pb-quality").value = "be specific, actionable, and focused on improvements that would make the scene stronger without flattening the voice";
+    document.getElementById("pb-templateMode").checked = true;
+    buildOutputs();
+  });
+
+  document.getElementById("pb-clearBtn").addEventListener("click", function () {
+    [
+      "pb-goal", "pb-taskType", "pb-genre", "pb-tone", "pb-audience",
+      "pb-context", "pb-focus", "pb-avoid", "pb-format", "pb-length", "pb-quality"
+    ].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    document.getElementById("pb-templateMode").checked = false;
+    document.getElementById("pb-output-simple").textContent = "Fill out the form and click “Generate Prompts.”";
+    document.getElementById("pb-output-structured").textContent = "Your structured prompt will appear here.";
+    document.getElementById("pb-output-template").textContent = "Your reusable template will appear here.";
+    ["pb-status-simple", "pb-status-structured", "pb-status-template"].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = "";
+    });
+  });
+
+  mount.querySelectorAll(".ffa-pb-tab").forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      setTab(tab.getAttribute("data-target"));
+    });
+  });
+
+  mount.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var target = btn.getAttribute("data-copy");
+      var statusMap = {
+        "pb-output-simple": "pb-status-simple",
+        "pb-output-structured": "pb-status-structured",
+        "pb-output-template": "pb-status-template"
+      };
+      copyText(target, statusMap[target]);
+    });
+  });
+})();
+</script>
