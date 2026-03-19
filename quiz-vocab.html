@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vocabulary Matching Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --accent-2: #a78bfa;
+      --success: #16a34a;
+      --error: #dc2626;
+      --shadow: 0 10px 30px rgba(0,0,0,0.2);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1222 0%, #111827 100%);
+      color: var(--text);
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 695px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(96,165,250,0.18), rgba(167,139,250,0.18));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      line-height: 1.15;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--text);
+      opacity: 0.92;
+      line-height: 1.6;
+      font-size: 0.97rem;
+    }
+
+    .quiz-shell {
+      display: grid;
+      grid-template-columns: 290px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .bank, .board, .results {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .bank {
+      padding: 14px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .bank.over {
+      border-color: rgba(96,165,250,0.75);
+      background: rgba(96,165,250,0.08);
+    }
+
+    .panel-title {
+      margin: 0 0 6px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .panel-copy {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .draggable {
+      border: 1px solid rgba(255,255,255,0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border-radius: 14px;
+      padding: 10px;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      line-height: 1.35;
+      font-size: 0.84rem;
+    }
+
+    .draggable:hover {
+      transform: translateY(-1px);
+      border-color: rgba(96,165,250,0.7);
+    }
+
+    .draggable.dragging {
+      opacity: 0.5;
+      transform: scale(0.98);
+      cursor: grabbing;
+    }
+
+    .board { padding: 14px; }
+
+    .task-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .task-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 12px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .task-card.correct {
+      border-color: rgba(22,163,74,0.75);
+      background: rgba(22,163,74,0.08);
+    }
+
+    .task-card.incorrect {
+      border-color: rgba(220,38,38,0.75);
+      background: rgba(220,38,38,0.08);
+    }
+
+    .task-text {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .dropzone {
+      min-height: 58px;
+      border: 2px dashed rgba(148,163,184,0.45);
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(15,23,42,0.5);
+      color: var(--muted);
+      transition: border-color 0.15s ease, background 0.15s ease;
+      font-size: 0.82rem;
+      line-height: 1.3;
+    }
+
+    .dropzone.over {
+      border-color: var(--accent);
+      background: rgba(96,165,250,0.08);
+    }
+
+    .dropzone.filled {
+      justify-content: stretch;
+      padding: 0;
+      border-style: solid;
+      border-color: rgba(255,255,255,0.1);
+      background: transparent;
+    }
+
+    .dropzone .draggable {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(96,165,250,0.16), rgba(167,139,250,0.16));
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 8px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      line-height: 1.45;
+      font-size: 0.82rem;
+    }
+
+    .feedback.show { display: block; }
+
+    .feedback.correct {
+      background: rgba(22,163,74,0.12);
+      border: 1px solid rgba(22,163,74,0.45);
+      color: #dcfce7;
+    }
+
+    .feedback.incorrect {
+      background: rgba(220,38,38,0.12);
+      border: 1px solid rgba(220,38,38,0.5);
+      color: #fee2e2;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .results {
+      margin-top: 16px;
+      padding: 14px;
+      display: none;
+    }
+
+    .results.show { display: block; }
+
+    .score {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .score-note {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 700px) {
+      .quiz-shell { grid-template-columns: 1fr; }
+      .bank { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Mini Exercise: Match the Term to the Meaning</h1>
+      <p class="sub">Drag each definition card to the best vocabulary term. You can move cards around or drag them back to the definitions panel before checking answers.</p>
+    </section>
+
+    <section class="quiz-shell">
+      <aside id="bankPanel" class="bank">
+        <h2 class="panel-title">Possible Definitions</h2>
+        <p class="panel-copy">Drag cards into the matching term boxes. Drag a card back here anytime to revise.</p>
+        <div id="optionBank" class="option-list"></div>
+      </aside>
+
+      <section class="board">
+        <h2 class="panel-title">Terms</h2>
+        <p class="panel-copy">Match each term to the best description.</p>
+        <div id="taskGrid" class="task-grid"></div>
+        <div class="controls">
+          <button id="checkBtn" class="primary">Check My Answers</button>
+          <button id="resetBtn" class="secondary">Reset Quiz</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="results" class="results">
+      <div id="score" class="score"></div>
+      <div id="scoreNote" class="score-note"></div>
+    </section>
+  </div>
+
+  <script>
+    const options = [
+      {
+        id: "def-a",
+        label: "A. A group of related AI models from the same provider"
+      },
+      {
+        id: "def-b",
+        label: "B. The maximum amount of information a model can consider in one request"
+      },
+      {
+        id: "def-c",
+        label: "C. A control that influences randomness or variation in output"
+      },
+      {
+        id: "def-d",
+        label: "D. The upper limit on how much the model can generate"
+      },
+      {
+        id: "def-e",
+        label: "E. A model that can work with more than one kind of input or output"
+      },
+      {
+        id: "def-f",
+        label: "F. The ability of a model to call structured tools or functions"
+      }
+    ];
+
+    const tasks = [
+      {
+        id: "t1",
+        prompt: "1) Temperature",
+        accepted: ["def-c"],
+        explanation: "Temperature controls variation and randomness in generated output."
+      },
+      {
+        id: "t2",
+        prompt: "2) Context Window",
+        accepted: ["def-b"],
+        explanation: "Context window is the total amount of information the model can process in one request."
+      },
+      {
+        id: "t3",
+        prompt: "3) Model Family",
+        accepted: ["def-a"],
+        explanation: "A model family is a related set of models from the same provider."
+      },
+      {
+        id: "t4",
+        prompt: "4) Multimodal",
+        accepted: ["def-e"],
+        explanation: "Multimodal means a model can handle multiple input/output types."
+      },
+      {
+        id: "t5",
+        prompt: "5) Max Output Tokens",
+        accepted: ["def-d"],
+        explanation: "Max output tokens sets the upper limit of what the model can generate."
+      },
+      {
+        id: "t6",
+        prompt: "6) Tool Use",
+        accepted: ["def-f"],
+        explanation: "Tool use means the model can invoke structured tools/functions."
+      }
+    ];
+
+    const bankPanel = document.getElementById("bankPanel");
+    const optionBank = document.getElementById("optionBank");
+    const taskGrid = document.getElementById("taskGrid");
+    const checkBtn = document.getElementById("checkBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const resultsEl = document.getElementById("results");
+    const scoreEl = document.getElementById("score");
+    const scoreNoteEl = document.getElementById("scoreNote");
+
+    let draggedId = null;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function resetTaskCardState(taskCard) {
+      if (!taskCard) return;
+      taskCard.classList.remove("correct", "incorrect");
+      const feedback = taskCard.querySelector(".feedback");
+      if (!feedback) return;
+      feedback.className = "feedback";
+      feedback.textContent = "";
+    }
+
+    function clearDropzoneIfEmpty(zone) {
+      if (!zone || !zone.classList.contains("dropzone")) return;
+      if (zone.querySelector(".draggable")) return;
+      zone.classList.remove("filled", "over");
+      zone.textContent = "Drop a definition card here";
+    }
+
+    function moveCardToBank(cardEl) {
+      if (!cardEl) return;
+      const sourceZone = cardEl.closest(".dropzone");
+      optionBank.appendChild(cardEl);
+      clearDropzoneIfEmpty(sourceZone);
+      resetTaskCardState(sourceZone?.closest(".task-card"));
+    }
+
+    function createCard(option) {
+      const div = document.createElement("div");
+      div.className = "draggable";
+      div.draggable = true;
+      div.id = option.id;
+      div.textContent = option.label;
+
+      div.addEventListener("dragstart", () => {
+        draggedId = option.id;
+        div.classList.add("dragging");
+      });
+
+      div.addEventListener("dragend", () => {
+        div.classList.remove("dragging");
+      });
+
+      return div;
+    }
+
+    function renderBank() {
+      optionBank.innerHTML = "";
+      shuffle(options).forEach(option => optionBank.appendChild(createCard(option)));
+    }
+
+    function renderTasks() {
+      taskGrid.innerHTML = "";
+
+      tasks.forEach(task => {
+        const card = document.createElement("div");
+        card.className = "task-card";
+        card.dataset.taskId = task.id;
+
+        const prompt = document.createElement("p");
+        prompt.className = "task-text";
+        prompt.textContent = task.prompt;
+
+        const dropzone = document.createElement("div");
+        dropzone.className = "dropzone";
+        dropzone.dataset.taskId = task.id;
+        dropzone.textContent = "Drop a definition card here";
+
+        dropzone.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          dropzone.classList.add("over");
+        });
+
+        dropzone.addEventListener("dragleave", () => {
+          dropzone.classList.remove("over");
+        });
+
+        dropzone.addEventListener("drop", (e) => {
+          e.preventDefault();
+          dropzone.classList.remove("over");
+          if (!draggedId) return;
+
+          const draggedEl = document.getElementById(draggedId);
+          if (!draggedEl) return;
+
+          const sourceZone = draggedEl.closest(".dropzone");
+          const existing = dropzone.querySelector(".draggable");
+
+          if (existing) {
+            moveCardToBank(existing);
+          }
+
+          dropzone.innerHTML = "";
+          dropzone.appendChild(draggedEl);
+          dropzone.classList.add("filled");
+          clearDropzoneIfEmpty(sourceZone);
+
+          resetTaskCardState(dropzone.closest(".task-card"));
+          resetTaskCardState(sourceZone?.closest(".task-card"));
+        });
+
+        const feedback = document.createElement("div");
+        feedback.className = "feedback";
+
+        card.appendChild(prompt);
+        card.appendChild(dropzone);
+        card.appendChild(feedback);
+        taskGrid.appendChild(card);
+      });
+
+      bankPanel.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        bankPanel.classList.add("over");
+      });
+
+      bankPanel.addEventListener("dragleave", (e) => {
+        if (!bankPanel.contains(e.relatedTarget)) {
+          bankPanel.classList.remove("over");
+        }
+      });
+
+      bankPanel.addEventListener("drop", (e) => {
+        e.preventDefault();
+        bankPanel.classList.remove("over");
+        if (!draggedId) return;
+        const draggedEl = document.getElementById(draggedId);
+        if (!draggedEl) return;
+        moveCardToBank(draggedEl);
+      });
+    }
+
+    function checkAnswers() {
+      let correctCount = 0;
+
+      tasks.forEach(task => {
+        const card = document.querySelector(`.task-card[data-task-id="${task.id}"]`);
+        const zone = card.querySelector(".dropzone");
+        const placed = zone.querySelector(".draggable");
+        const feedback = card.querySelector(".feedback");
+
+        card.classList.remove("correct", "incorrect");
+        feedback.className = "feedback show";
+
+        if (!placed) {
+          card.classList.add("incorrect");
+          feedback.classList.add("incorrect");
+          feedback.innerHTML = `<strong>Not matched yet.</strong> ${task.explanation}`;
+          return;
+        }
+
+        const isCorrect = task.accepted.includes(placed.id);
+        if (isCorrect) {
+          correctCount++;
+          card.classList.add("correct");
+          feedback.classList.add("correct");
+          feedback.innerHTML = `<strong>Correct.</strong> ${task.explanation}`;
+        } else {
+          card.classList.add("incorrect");
+          feedback.classList.add("incorrect");
+          const acceptedLabel = task.accepted
+            .map(id => options.find(opt => opt.id === id)?.label)
+            .join(" or ");
+          feedback.innerHTML = `<strong>Almost.</strong> A better match is <strong>${acceptedLabel}</strong>. ${task.explanation}`;
+        }
+      });
+
+      const total = tasks.length;
+      resultsEl.classList.add("show");
+      scoreEl.textContent = `Score: ${correctCount} / ${total}`;
+
+      if (correctCount === total) {
+        scoreNoteEl.textContent = "Excellent. You matched all six vocabulary terms correctly.";
+      } else if (correctCount >= 4) {
+        scoreNoteEl.textContent = "Nice work. You have a solid grasp of these core terms.";
+      } else {
+        scoreNoteEl.textContent = "Good start. Review feedback and try again for full mastery.";
+      }
+    }
+
+    function resetQuiz() {
+      resultsEl.classList.remove("show");
+      renderBank();
+      document.querySelectorAll(".task-card").forEach(card => resetTaskCardState(card));
+      document.querySelectorAll(".dropzone").forEach(zone => {
+        zone.classList.remove("filled", "over");
+        zone.textContent = "Drop a definition card here";
+      });
+    }
+
+    renderBank();
+    renderTasks();
+
+    checkBtn.addEventListener("click", checkAnswers);
+    resetBtn.addEventListener("click", resetQuiz);
+  </script>
+</body>
+</html>
