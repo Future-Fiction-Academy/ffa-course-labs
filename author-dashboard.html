@@ -265,6 +265,9 @@
     .ad-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(123,82,153,0.27); max-height: 200px; }
   }
   </style>
+</head>
+<body>
+  <div id="ad-root" class="ad-wrap"></div>
     <script>
       (function () {
         const P = {
@@ -806,144 +809,5 @@
         }
       })();
     </script>
-      React.createElement('div',{className:"ad-card"},
-        React.createElement('div',{className:"ad-card-label"},"TASKS BY PHASE"),
-        React.createElement(ResponsiveContainer,{width:"100%",height:180},
-          React.createElement(BarChart,{data:barData,margin:{top:0,right:10,left:-20,bottom:0}},
-            React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#3a2a4a"}),
-            React.createElement(XAxis,{dataKey:"name",tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(YAxis,{tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(Tooltip,{contentStyle:{background:P.dark,border:`1px solid ${P.litePlum}`,color:P.text,fontSize:12},labelFormatter:v=>PHASES.find(p=>p.id===v)?.name||v}),
-            React.createElement(Bar,{dataKey:"tasks",name:"Total",fill:P.litePlum,radius:[2,2,0,0]}),
-            React.createElement(Bar,{dataKey:"done",name:"Done",fill:P.gold,radius:[2,2,0,0]})
-          )
-        )
-      )
-    ),
-    React.createElement('div',{className:"ad-card"},
-      React.createElement('div',{className:"ad-card-label"},"PHASE TIMELINE"),
-      React.createElement('div',{className:"ad-timeline"},
-        ...PHASES.map(ph=>React.createElement('div',{key:ph.id,style:{flex:1,position:"relative"}},
-          React.createElement('div',{className:"ad-timeline-bar",style:{background:ph.status===STATUS.done?ph.color:ph.status===STATUS.active?ph.color+"88":"#3a2a4a"}},
-            ph.status===STATUS.active&&React.createElement('div',{style:{position:"absolute",left:0,top:0,bottom:0,width:`${ph.pct}%`,background:ph.color}}),
-            React.createElement('div',{className:"ad-timeline-num"},ph.id)
-          ),
-          React.createElement('div',{className:"ad-timeline-label"},ph.name.split(" ")[0])
-        ))
-      )
-    )
-  );
-}
-
-function AnalyticsTab({tasks}){
-  return React.createElement('div',null,
-    React.createElement('h3',{style:{color:P.gold,fontFamily:"Georgia,serif",marginTop:0,marginBottom:20}},"Project Analytics"),
-    React.createElement('div',{className:"ad-grid-analytics"},
-      React.createElement('div',{className:"ad-card",style:{padding:20}},
-        React.createElement('div',{className:"ad-card-label"},"MANUSCRIPT PROGRESS"),
-        React.createElement(ResponsiveContainer,{width:"100%",height:160},
-          React.createElement(PieChart,null,
-            React.createElement(Pie,{data:[{v:PROJECT.wordsWritten},{v:PROJECT.targetWords-PROJECT.wordsWritten}],cx:"50%",cy:"50%",innerRadius:48,outerRadius:68,paddingAngle:2,dataKey:"v"},
-              React.createElement(Cell,{fill:P.gold}),React.createElement(Cell,{fill:"#3a2a4a"})
-            ),
-            React.createElement(Tooltip,{contentStyle:{background:P.dark,border:`1px solid ${P.litePlum}`,color:P.text,fontSize:12}})
-          )
-        ),
-        React.createElement('div',{style:{textAlign:"center",marginTop:-8}},
-          React.createElement('span',{style:{fontSize:24,fontWeight:"bold",color:P.gold,fontFamily:"Georgia,serif"}},`${Math.round(PROJECT.wordsWritten/PROJECT.targetWords*100)}%`),
-          React.createElement('div',{style:{fontSize:10,color:P.muted}},"of target word count"),
-          React.createElement('div',{style:{fontSize:12,color:P.text,marginTop:4}},`${(PROJECT.targetWords-PROJECT.wordsWritten).toLocaleString()} words remaining`)
-        )
-      ),
-      React.createElement('div',{className:"ad-card",style:{padding:20}},
-        React.createElement('div',{className:"ad-card-label"},"PHASE COMPLETION"),
-        React.createElement(ResponsiveContainer,{width:"100%",height:180},
-          React.createElement(BarChart,{data:PHASES.map(ph=>({name:ph.id,pct:ph.pct})),margin:{top:0,right:0,left:-28,bottom:0}},
-            React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#3a2a4a"}),
-            React.createElement(XAxis,{dataKey:"name",tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(YAxis,{domain:[0,100],tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(Tooltip,{contentStyle:{background:P.dark,border:`1px solid ${P.litePlum}`,color:P.text,fontSize:12},formatter:v=>[`${v}%`,"Complete"],labelFormatter:v=>PHASES.find(p=>p.id===v)?.name||v}),
-            React.createElement(Bar,{dataKey:"pct",name:"%",fill:P.gold,radius:[3,3,0,0]})
-          )
-        )
-      ),
-      React.createElement('div',{className:"ad-card ad-grid-full",style:{padding:20}},
-        React.createElement('div',{className:"ad-card-label"},"TASK DENSITY BY PHASE"),
-        React.createElement(ResponsiveContainer,{width:"100%",height:180},
-          React.createElement(BarChart,{data:PHASES.map(ph=>({name:ph.name.split(" ")[0],done:(tasks[ph.id]||[]).filter(t=>t.done).length,remaining:(tasks[ph.id]||[]).filter(t=>!t.done).length})),margin:{top:0,right:10,left:-20,bottom:0}},
-            React.createElement(CartesianGrid,{strokeDasharray:"3 3",stroke:"#3a2a4a"}),
-            React.createElement(XAxis,{dataKey:"name",tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(YAxis,{tick:{fill:P.muted,fontSize:10}}),
-            React.createElement(Tooltip,{contentStyle:{background:P.dark,border:`1px solid ${P.litePlum}`,color:P.text,fontSize:12}}),
-            React.createElement(Legend,{wrapperStyle:{color:P.muted,fontSize:11}}),
-            React.createElement(Bar,{dataKey:"done",name:"Done",stackId:"a",fill:P.gold,radius:[0,0,0,0]}),
-            React.createElement(Bar,{dataKey:"remaining",name:"Remaining",stackId:"a",fill:P.litePlum,radius:[3,3,0,0]})
-          )
-        )
-      )
-    )
-  );
-}
-
-function AuthorDashboard(){
-  const [activeTab,setActiveTab]=useState("overview");
-  const [selectedPhase,setSelectedPhase]=useState(4);
-  const [tasks,setTasks]=useState(TASKS);
-  const toggleTask=(phaseId,taskId)=>setTasks(prev=>({...prev,[phaseId]:prev[phaseId].map(t=>t.id===taskId?{...t,done:!t.done}:t)}));
-  const all=Object.values(tasks).flat(),done=all.filter(t=>t.done).length;
-  const tabs=[{id:"overview",label:"Overview"},{id:"phases",label:"Phases"},{id:"analytics",label:"Analytics"}];
-  return React.createElement('div',null,
-    React.createElement('div',{className:"ad-topbar"},
-      React.createElement('div',null,
-        React.createElement('div',{style:{display:"flex",alignItems:"baseline",gap:12}},
-          React.createElement('h1',null,PROJECT.title),
-          React.createElement('span',{style:{fontSize:12,color:P.muted,fontStyle:"italic"}},PROJECT.genre)
-        ),
-        React.createElement('div',{className:"ad-topbar-meta"},`${PROJECT.author} \u00B7 Started ${PROJECT.startDate} \u00B7 Target ${PROJECT.targetDate}`)
-      ),
-      React.createElement('div',{className:"ad-topbar-right"},
-        React.createElement('div',{style:{textAlign:"right"}},
-          React.createElement('div',{style:{fontSize:18,fontWeight:"bold",color:P.gold,fontFamily:"Georgia,serif"}},`${Math.round(done/all.length*100)}%`),
-          React.createElement('div',{style:{fontSize:10,color:P.muted}},"overall")
-        ),
-        React.createElement('div',{className:"ad-avatar"},"MD")
-      )
-    ),
-    React.createElement('div',{className:"ad-body"},
-      React.createElement('div',{className:"ad-sidebar"},
-        React.createElement('div',{className:"ad-sidebar-label"},"PHASES"),
-        ...PHASES.map(ph=>React.createElement(PhaseBar,{key:ph.id,phase:ph,selected:selectedPhase===ph.id&&activeTab==="phases",onClick:()=>{setSelectedPhase(ph.id);setActiveTab("phases");}})),
-        React.createElement('div',{style:{marginTop:20,borderTop:"1px solid rgba(123,82,153,0.27)",paddingTop:16}},
-          React.createElement('div',{className:"ad-sidebar-label"},"MANUSCRIPT"),
-          React.createElement('div',{style:{fontSize:12,color:P.text,marginBottom:6}},React.createElement('span',{style:{color:P.gold,fontWeight:"bold"}},`${(PROJECT.wordsWritten/1000).toFixed(1)}k`),` / ${PROJECT.targetWords/1000}k words`),
-          React.createElement('div',{style:{height:5,background:"#3a2a4a",borderRadius:3}},
-            React.createElement('div',{style:{width:`${Math.round(PROJECT.wordsWritten/PROJECT.targetWords*100)}%`,height:"100%",background:P.gold,borderRadius:3}})
-          ),
-          React.createElement('div',{style:{fontSize:11,color:P.muted,marginTop:8}},React.createElement('span',{style:{color:"#8C3A00"}},`Scene ${PROJECT.scenes.complete}`),` / ${PROJECT.scenes.total}`)
-        )
-      ),
-      React.createElement('div',{className:"ad-main"},
-        React.createElement('div',{className:"ad-tabs"},
-          ...tabs.map(tab=>React.createElement('button',{key:tab.id,className:"ad-tab-btn",onClick:()=>setActiveTab(tab.id),style:{background:activeTab===tab.id?P.gold:"transparent",color:activeTab===tab.id?P.dark:P.muted,fontWeight:activeTab===tab.id?"bold":"normal"}},tab.label))
-        ),
-        activeTab==="overview"&&React.createElement(OverviewTab,{tasks}),
-        activeTab==="phases"&&React.createElement(TaskList,{phaseId:selectedPhase,tasks,onToggle:toggleTask}),
-        activeTab==="analytics"&&React.createElement(AnalyticsTab,{tasks})
-      )
-    )
-  );
-}
-
-ReactDOM.render(React.createElement(AuthorDashboard), document.getElementById('ad-root'));
-
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init, { once: true });
-    } else {
-      init();
-    }
-  })();
-  </script>
 </body>
 </html>
