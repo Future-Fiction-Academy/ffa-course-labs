@@ -10,6 +10,7 @@
         "act-structure-fullscreen",
         "or-image-chat",
         "modalities",
-        "quiz-vocab"
+        "quiz-vocab",
+        "quiz-claude-cowork"
     ]
 }
