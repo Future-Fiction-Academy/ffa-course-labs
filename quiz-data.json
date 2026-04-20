@@ -1,0 +1,227 @@
+{
+    "title": "Claude Cowork Vocab Quiz",
+    "questionsPerGroup": 5,
+    "passThreshold": 90,
+    "questions": [
+      {
+        "term": "Cowork",
+        "definition": "A mode in the Claude desktop app that connects Claude to a folder on your computer. Unlike Chat (conversation only) or Projects (uploaded docs), Cowork lets Claude actually create, read, edit, and delete real files on your machine.",
+        "section": "Your Working Environment"
+      },
+      {
+        "term": "Workspace",
+        "definition": "The folder on your computer that you link to a Cowork session. Claude can only see what is inside this folder and its subfolders. Everything else on your machine is invisible to it.",
+        "section": "Your Working Environment"
+      },
+      {
+        "term": "Session",
+        "definition": "One continuous interaction with Claude in Cowork. When the session ends, Claude's temporary working memory is wiped. Only files saved to your workspace survive.",
+        "section": "Your Working Environment"
+      },
+      {
+        "term": "CLAUDE.md",
+        "definition": "A markdown !!! file in your workspace that Claude reads automatically when a session starts. Think of it as the project's brain: it tells Claude what the project is about, what has been done, and how to behave.",
+        "section": "Your Working Environment"
+      },
+      {
+        "term": "Scratch Pad",
+        "definition": "Claude's temporary working area inside its sandbox. Files created here disappear when the session ends. Think of it as a whiteboard that gets erased.",
+        "section": "Your Working Environment"
+      },
+      {
+        "term": "VM (Virtual Machine)",
+        "definition": "The sandboxed computer environment Claude runs inside. It is isolated from the rest of your Mac and can only access your mounted workspace folder.",
+        "section": "How Claude Works Under the Hood"
+      },
+      {
+        "term": "Mount / /mnt/",
+        "definition": "The bridge between Claude's sandbox and your real folder. When Claude saves a file to /mnt/, it appears in your workspace folder on disk.",
+        "section": "How Claude Works Under the Hood"
+      },
+      {
+        "term": "Compaction",
+        "definition": "When a conversation gets too long for Claude's memory, it automatically summarizes and trims earlier parts while trying to preserve key decisions.",
+        "section": "How Claude Works Under the Hood"
+      },
+      {
+        "term": "Context Window",
+        "definition": "The total amount of text Claude can hold in memory at once. When the conversation exceeds this, compaction happens.",
+        "section": "How Claude Works Under the Hood"
+      },
+      {
+        "term": "Skills",
+        "definition": "Reusable capability modules that extend what Claude can do. Some are built-in and others are personal skills you install or create.",
+        "section": "How Claude Works Under the Hood"
+      },
+      {
+        "term": "CRUD",
+        "definition": "Create, Read, Update, Delete. These are the four basic operations you can perform on a file.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "Markdown (.md)",
+        "definition": "A lightweight text format that uses simple symbols like # for headings and - for lists to add structure. It is human-readable and widely supported.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "CSV (Comma-Separated Values)",
+        "definition": "A plain-text file where data is separated by commas. It is essentially a spreadsheet without formatting, tabs, or formulas.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "XLSX",
+        "definition": "Microsoft Excel's file format. It supports tabs, colors, formulas, and formatting.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "DOCX",
+        "definition": "Microsoft Word's file format. It supports rich text, tables, and fillable forms.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "PPTX",
+        "definition": "Microsoft PowerPoint's file format.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "PDF",
+        "definition": "A fixed-layout document format. Claude can create and read PDFs, but editing an existing one is more like rebuilding it from scratch.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "SVG (Scalable Vector Graphics)",
+        "definition": "An image format defined by math rather than pixels, so it scales without losing quality.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "JSON (JavaScript Object Notation)",
+        "definition": "A structured data format using key-value pairs. It is commonly used to pass information between systems.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "HTML",
+        "definition": "The standard language for structuring web pages.",
+        "section": "Files and Formats"
+      },
+      {
+        "term": "Frontmatter",
+        "definition": "A block of metadata at the top of a markdown file, written in YAML and enclosed between --- lines. Apps can read it automatically.",
+        "section": "Frontmatter and Schemas"
+      },
+      {
+        "term": "YAML",
+        "definition": "A human-readable data format often used for frontmatter and configuration files. It is easy to read but sensitive to indentation and typos.",
+        "section": "Frontmatter and Schemas"
+      },
+      {
+        "term": "Schema",
+        "definition": "A defined structure that lists every piece of information an app needs to track and what type each piece is.",
+        "section": "Frontmatter and Schemas"
+      },
+      {
+        "term": "CSS (Cascading Style Sheets)",
+        "definition": "The language that controls the visual appearance of web pages, including colors, fonts, spacing, and layout.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "JavaScript (JS)",
+        "definition": "The programming language that makes web pages interactive.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "React",
+        "definition": "A JavaScript framework for building user interfaces out of reusable components.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "Library / Dependency",
+        "definition": "Pre-built code that your app relies on. When a library fails to load, the features that depend on it break.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "CDN (Content Delivery Network)",
+        "definition": "A network of servers that hosts common libraries so your app can load them from the internet rather than bundling them locally.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "localStorage",
+        "definition": "A browser feature that lets a web page save data on your computer so it survives page refreshes and browser restarts.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "File API",
+        "definition": "A browser feature that lets a web page ask you to pick a file from your computer, read it, and work with it without uploading anything to the internet.",
+        "section": "Web and Interactivity"
+      },
+      {
+        "term": "Console",
+        "definition": "The developer panel in a web browser where errors, warnings, and diagnostic messages appear.",
+        "section": "Debugging Essentials"
+      },
+      {
+        "term": "Error vs. Warning",
+        "definition": "In the console, an error means something is broken and will not function. A warning means something is suboptimal but not necessarily broken.",
+        "section": "Debugging Essentials"
+      },
+      {
+        "term": "Root Cause",
+        "definition": "The underlying reason something failed, as opposed to the symptom you see on screen.",
+        "section": "Debugging Essentials"
+      },
+      {
+        "term": "Import Statement",
+        "definition": "A line at the top of a code file that pulls in a library. When an import fails, everything that depends on that library breaks.",
+        "section": "Debugging Essentials"
+      },
+      {
+        "term": "Hardcoded",
+        "definition": "Data written directly into the code rather than entered by the user or loaded from a file.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "MVP (Minimum Viable Product)",
+        "definition": "The simplest version of an app that works and is useful.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "Vibe Coding",
+        "definition": "A collaborative style of development where a human describes what they want in plain language and AI writes the code, with both iterating together in real time.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "Inline Editing",
+        "definition": "Clicking directly on displayed text to edit it in place instead of opening a separate edit screen.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "Auto-Save",
+        "definition": "The app saves your changes automatically whenever you make them, without needing a Save button.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "QA (Quality Assurance)",
+        "definition": "The process of checking that output meets expectations.",
+        "section": "Development Concepts"
+      },
+      {
+        "term": "Symlink (Symbolic Link)",
+        "definition": "A file that acts as a shortcut to another location on your computer.",
+        "section": "System and Filesystem"
+      },
+      {
+        "term": "Home Directory (~)",
+        "definition": "Your user folder on macOS, such as /Users/yourname/. Cowork restricts workspaces to paths inside this directory.",
+        "section": "System and Filesystem"
+      },
+      {
+        "term": ".env File",
+        "definition": "A plain-text file for storing secrets like API keys and passwords so they are not written directly into code.",
+        "section": "System and Filesystem"
+      },
+      {
+        "term": "API Key",
+        "definition": "A unique string that grants your app access to an external service and should be stored in an .env file or equivalent, not directly in code.",
+        "section": "System and Filesystem"
+      }
+    ]
+  }
