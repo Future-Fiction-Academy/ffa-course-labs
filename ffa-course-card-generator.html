@@ -151,6 +151,23 @@
   }
   .toast.show { opacity: 1; }
 
+  .image-url-hint {
+    font-size: 11px;
+    color: #666;
+    margin: -4px 0 8px;
+    line-height: 1.45;
+  }
+  .ffa-image-load-warning {
+    font-size: 12px;
+    color: #5c4a1a;
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    background: #fff8e6;
+    border: 1px solid #e6d9a8;
+    border-radius: 8px;
+    line-height: 1.45;
+  }
+
   /* =============================================== */
   /* CARD STYLES — these mirror what embed-ready HTML uses. */
   /* =============================================== */
@@ -319,6 +336,7 @@
   <textarea id="f_desc">Discover the constraint system that shapes every great story. This foundational lesson introduces the core laws of narrative motion and shows you how to brainstorm with AI inside the NPE framework — the same engine FFA authors use to plan books that actually work.</textarea>
 
   <label for="f_image" style="margin-top: 12px;">Image URL (hosted image, 2:3 portrait)</label>
+  <p class="image-url-hint">Use a public HTTPS URL (your site, CDN, etc.). Session-only links from ChatGPT and similar apps usually return 403 and will not show in the preview or in Teachable.</p>
   <input type="url" id="f_image" placeholder="https://cdn.ffa.com/lessons/npe-intro.jpg">
 
   <label for="f_link" style="margin-top: 12px;">Lesson link URL</label>
@@ -420,13 +438,16 @@ function buildCardHTML() {
     .map(l => l.trim())
     .filter(Boolean);
 
-  const imageStyle = image
-    ? `background-image: url('${escAttr(image)}'); background-size: cover; background-position: center;`
-    : "";
-
   const imagePlaceholder = image
     ? ""
     : `<span>[portrait image]</span>`;
+
+  // <img src> with escAttr so & and " in query strings are safe in HTML attributes.
+  const imageCell = image
+    ? `<div style="border-radius:8px; min-height:300px; overflow:hidden; background:#E1F5EE; align-self:stretch;">
+         <img class="ffa-card-img" src="${escAttr(image)}" alt="" decoding="async" style="width:100%;height:100%;min-height:300px;object-fit:cover;display:block;" />
+       </div>`
+    : `<div style="background:#E1F5EE; border-radius:8px; min-height:300px; display:flex; align-items:center; justify-content:center; color:#085041; font-style:italic; font-size:13px;">${imagePlaceholder}</div>`;
 
   const tagsHTML = (badge || subcat)
     ? `<div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
@@ -460,7 +481,7 @@ function buildCardHTML() {
 
   return `<a href="${escAttr(link)}" style="display:block; width:100%; box-sizing:border-box; text-decoration:none; color:inherit; margin:0;">
   <div style="background:#FFFFFF; border:1px solid rgba(0,0,0,0.1); border-radius:12px; padding:1.25rem; display:grid; grid-template-columns:200px 1fr; gap:1.5rem;">
-    <div style="background:#E1F5EE; border-radius:8px; min-height:300px; ${imageStyle} display:flex; align-items:center; justify-content:center; color:#085041; font-style:italic; font-size:13px;">${imagePlaceholder}</div>
+    ${imageCell}
     <div style="display:flex; flex-direction:column; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
       ${tagsHTML}
       <h3 style="font-size:19px; font-weight:500; margin:0 0 10px; line-height:1.3; color:#1A1A1A;">${title}</h3>
@@ -478,8 +499,25 @@ function buildCardHTML() {
 // ---------- Preview + output refresh ----------
 function refresh() {
   const html = buildCardHTML();
-  document.getElementById("preview").innerHTML = html;
+  const preview = document.getElementById("preview");
+  preview.innerHTML = html;
   document.getElementById("output").value = html;
+
+  const img = preview.querySelector(".ffa-card-img");
+  if (img && img.getAttribute("src")) {
+    const warn =
+      "This image URL did not load. Links from ChatGPT and similar apps are usually session-only (the server returns 403 for embeds). Use a public image URL or host the file yourself.";
+    const showWarning = () => {
+      if (preview.querySelector("#ffa-image-load-warning")) return;
+      const p = document.createElement("p");
+      p.id = "ffa-image-load-warning";
+      p.className = "ffa-image-load-warning";
+      p.textContent = warn;
+      preview.insertBefore(p, preview.firstChild);
+    };
+    img.addEventListener("error", showWarning, { once: true });
+    if (img.complete && img.naturalWidth === 0) showWarning();
+  }
 }
 
 // Attach listeners to form fields (not the readonly embed output).
