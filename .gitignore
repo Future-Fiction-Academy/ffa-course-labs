@@ -1,3 +1,6 @@
 dev/
 node_modules/
 .DS_Store
+.claude/
+.carlo
+vendor/

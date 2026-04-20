@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Author Dashboard</title>
+  <style>
+  .ad-wrap *, .ad-wrap *::before, .ad-wrap *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .ad-wrap button { font-family: inherit; }
+
+  .ad-wrap ::-webkit-scrollbar { width: 6px; }
+  .ad-wrap ::-webkit-scrollbar-track { background: #2D1B33; }
+  .ad-wrap ::-webkit-scrollbar-thumb { background: #4A2C5E; border-radius: 3px; }
+
+  .ad-wrap {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Calibri, sans-serif;
+    background: #1B0F22;
+    color: #D4C8E0;
+    font-size: 13px;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .ad-topbar {
+    background: #2D1B33;
+    border-bottom: 1px solid rgba(201,168,76,0.27);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .ad-topbar h1 {
+    margin: 0;
+    font-size: 22px;
+    font-family: Georgia, serif;
+    color: #C9A84C;
+  }
+
+  .ad-topbar-meta {
+    font-size: 11px;
+    color: #8B7A9E;
+    margin-top: 3px;
+  }
+
+  .ad-topbar-right {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .ad-body {
+    display: flex;
+    min-height: 600px;
+  }
+
+  /* ── Sidebar ── */
+  .ad-sidebar {
+    width: 210px;
+    flex-shrink: 0;
+    background: #2D1B33;
+    border-right: 1px solid rgba(123,82,153,0.27);
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .ad-sidebar-label {
+    font-size: 10px;
+    color: #8B7A9E;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .ad-phase-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 11px;
+    transition: background 0.2s;
+  }
+
+  .ad-phase-progress {
+    height: 3px;
+    background: #3a2a4a;
+    border-radius: 2px;
+    margin-top: 4px;
+  }
+
+  /* ── Main content ── */
+  .ad-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px;
+  }
+
+  .ad-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(123,82,153,0.27);
+    padding-bottom: 12px;
+  }
+
+  .ad-tab-btn {
+    padding: 7px 18px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    transition: background 0.2s;
+  }
+
+  /* ── Cards ── */
+  .ad-card {
+    background: #4A2C5E;
+    border: 1px solid #7B5299;
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .ad-card-label {
+    font-size: 11px;
+    color: #8B7A9E;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .ad-logline-card {
+    background: #4A2C5E;
+    border: 1px solid #7B5299;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    border-left: 4px solid #C9A84C;
+  }
+
+  /* ── Task items ── */
+  .ad-task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  /* ── Stat cards row ── */
+  .ad-stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+  }
+
+  .ad-stat-card {
+    background: #4A2C5E;
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 130px;
+  }
+
+  .ad-stat-value {
+    font-size: 22px;
+    font-weight: bold;
+    font-family: Georgia, serif;
+  }
+
+  .ad-stat-label {
+    font-size: 11px;
+    color: #8B7A9E;
+    margin-top: 2px;
+  }
+
+  .ad-stat-sub {
+    font-size: 10px;
+    color: #C9A84C;
+    margin-top: 3px;
+  }
+
+  /* ── Grid layouts ── */
+  .ad-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .ad-grid-analytics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .ad-grid-full {
+    grid-column: 1 / -1;
+  }
+
+  /* ── Phase timeline ── */
+  .ad-timeline {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .ad-timeline-bar {
+    height: 28px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ad-timeline-num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: #F5F0EB;
+    font-weight: bold;
+  }
+
+  .ad-timeline-label {
+    font-size: 8px;
+    color: #8B7A9E;
+    text-align: center;
+    margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Avatar ── */
+  .ad-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #4A2C5E;
+    border: 3px solid #C9A84C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #C9A84C;
+    font-weight: bold;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .ad-body { flex-direction: column; }
+    .ad-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(123,82,153,0.27); max-height: 200px; }
+  }
+  </style>
+</head>
+<body>
+  <div id="ad-root" class="ad-wrap"></div>
+    <script>
+      (function () {
+        const P = {
+          plum: "#2D1B33",
+          midPlum: "#4A2C5E",
+          litePlum: "#7B5299",
+          gold: "#C9A84C",
+          goldLite: "#E8D4A0",
+          cream: "#F5F0EB",
+          dark: "#1B0F22",
+          text: "#D4C8E0",
+          muted: "#8B7A9E",
+        };
+
+        const STATUS = { done: "done", active: "active", pending: "pending" };
+
+        const PROJECT = {
+          title: "The Meridian Pact",
+          author: "Marco Delacroix",
+          genre: "Speculative Literary Thriller",
+          logline:
+            "A disgraced cartographer discovers the borders of six nations were drawn to contain something ancient — and the treaty holding it in place expires in thirty days.",
+          startDate: "Nov 1, 2025",
+          targetDate: "Sep 1, 2026",
+          wordsWritten: 34500,
+          targetWords: 90000,
+          scenes: { complete: 21, total: 68 },
+        };
+
+        const PHASES = [
+          { id: 1, name: "Ideation", status: STATUS.done, pct: 100, color: "#1A5276" },
+          { id: 2, name: "Story Architecture", status: STATUS.done, pct: 100, color: "#1E6B2E" },
+          { id: 3, name: "Research", status: STATUS.done, pct: 100, color: "#5B2C8C" },
+          { id: 4, name: "Drafting", status: STATUS.active, pct: 58, color: "#8C3A00" },
+          { id: 5, name: "Revision", status: STATUS.pending, pct: 0, color: "#7D4000" },
+          { id: 6, name: "Beta & Feedback", status: STATUS.pending, pct: 0, color: "#8B0000" },
+          { id: 7, name: "Production", status: STATUS.pending, pct: 0, color: "#283593" },
+          { id: 8, name: "Publishing", status: STATUS.pending, pct: 0, color: "#006064" },
+          { id: 9, name: "Mkt & Launch", status: STATUS.pending, pct: 0, color: "#880E4F" },
+          { id: 10, name: "Ongoing Mkt", status: STATUS.pending, pct: 0, color: "#6A1B9A" },
+          { id: 11, name: "Series & Business", status: STATUS.pending, pct: 0, color: "#F57F17" },
+        ];
+
+        const TASKS = {
+          1: [
+            { id: "1a", text: "Premise: A cartographer’s map contains a hidden treaty binding an ancient force", done: true },
+            { id: "1b", text: "Logline drafted and stress-tested", done: true },
+            { id: "1c", text: "Comp titles: The Name of the Rose, Piranesi, Jonathan Strange", done: true },
+            { id: "1d", text: "Genre confirmed: Speculative Literary Thriller", done: true },
+          ],
+          2: [
+            { id: "2a", text: "Protagonist wound: Marco abandoned his principles to survive the war", done: true },
+            { id: "2b", text: "Antagonist: The Boundary Commission — a bureaucracy built on the secret", done: true },
+            { id: "2c", text: "Beat sheet complete (Story Grid structure)", done: true },
+            { id: "2d", text: "Scene-by-scene outline: 68 scenes mapped", done: true },
+            { id: "2e", text: "Theme: The violence encoded in borders; what we agree not to see", done: true },
+          ],
+          3: [
+            { id: "3a", text: "Historical cartography practices, 1900–1950", done: true },
+            { id: "3b", text: "Post-WWI boundary commissions (Sykes-Picot, Paris Peace Conference)", done: true },
+            { id: "3c", text: "Research notes organized into reference doc", done: true },
+            { id: "3d", text: "Sensitivity read notes on colonial geography", done: true },
+          ],
+          4: [
+            { id: "4a", text: "Act 1 complete (Scenes 1–18): Delacroix receives the commission", done: true },
+            { id: "4b", text: "Scene 19: The first anomaly in the Veldtheim sector", done: true },
+            { id: "4c", text: "Scene 20: Confrontation at the Archive — draft complete", done: true },
+            { id: "4d", text: "Scene 21: Kira Solis introduced — dialogue draft", done: true },
+            { id: "4e", text: "Scene 22–28: The border crossing sequence", done: false },
+            { id: "4f", text: "Midpoint scene: Delacroix destroys his original map", done: false },
+            { id: "4g", text: "Act 2B (Scenes 35–50): The unraveling — outline to prose", done: false },
+            { id: "4h", text: "Act 3 (Scenes 51–68): Full draft", done: false },
+            { id: "4i", text: "Continuity pass: timeline and geographic consistency", done: false },
+            { id: "4j", text: "POV audit: filter words, interiority depth", done: false },
+          ],
+          5: [
+            { id: "5a", text: "Structural analysis pass", done: false },
+            { id: "5b", text: "Arc evaluation — Delacroix, Kira, The Commission", done: false },
+            { id: "5c", text: "Line edit: voice consistency, prose elevation", done: false },
+            { id: "5d", text: "Semantic error identification", done: false },
+            { id: "5e", text: "Copy edit and final proofread", done: false },
+          ],
+          6: [
+            { id: "6a", text: "Beta reader query letters", done: false },
+            { id: "6b", text: "Recruit 4–6 targeted beta readers", done: false },
+            { id: "6c", text: "Beta feedback synthesis and action plan", done: false },
+            { id: "6d", text: "Sensitivity reader pass", done: false },
+          ],
+          7: [
+            { id: "7a", text: "Manuscript formatting for KDP upload", done: false },
+            { id: "7b", text: "Cover brief: dark cartographic aesthetic, literary thriller signals", done: false },
+            { id: "7c", text: "eBook and print interior layout", done: false },
+            { id: "7d", text: "ISBN registration and copyright page", done: false },
+          ],
+          8: [
+            { id: "8a", text: "KDP and IngramSpark setup", done: false },
+            { id: "8b", text: "Amazon book description copy", done: false },
+            { id: "8c", text: "BISAC categories and 7 keywords", done: false },
+            { id: "8d", text: "Pricing strategy: wide distribution", done: false },
+          ],
+          9: [
+            { id: "9a", text: "ARC team recruitment (target: 40 readers)", done: false },
+            { id: "9b", text: "Street team onboarding", done: false },
+            { id: "9c", text: "Launch week playbook", done: false },
+            { id: "9d", text: "Press kit and media outreach", done: false },
+            { id: "9e", text: "BookTok/Bookstagram pitch campaign", done: false },
+          ],
+          10: [
+            { id: "10a", text: "Newsletter strategy: biweekly cadence", done: false },
+            { id: "10b", text: "Reader magnet: deleted map chapter", done: false },
+            { id: "10c", text: "Amazon Ads campaign setup", done: false },
+            { id: "10d", text: "Social content calendar (Q3–Q4)", done: false },
+          ],
+          11: [
+            { id: "11a", text: "Series arc: The Meridian Trilogy planned", done: false },
+            { id: "11b", text: "Book 2 premise drafted", done: false },
+            { id: "11c", text: "Indie publishing expense tracker", done: false },
+            { id: "11d", text: "Author brand: cartographic gothic aesthetic", done: false },
+          ],
+        };
+
+        const state = {
+          activeTab: "phases",
+          selectedPhaseId: 5,
+          tasks: JSON.parse(JSON.stringify(TASKS)),
+        };
+
+        function $(selector, root) {
+          return (root || document).querySelector(selector);
+        }
+
+        function $all(selector, root) {
+          return Array.from((root || document).querySelectorAll(selector));
+        }
+
+        function sumTasks(tasksByPhase) {
+          return Object.values(tasksByPhase).reduce((acc, arr) => acc + arr.length, 0);
+        }
+
+        function sumDone(tasksByPhase) {
+          return Object.values(tasksByPhase)
+            .flat()
+            .reduce((acc, t) => acc + (t.done ? 1 : 0), 0);
+        }
+
+        function phaseTasks(phaseId) {
+          return state.tasks[String(phaseId)] || state.tasks[phaseId] || [];
+        }
+
+        function phaseDoneCount(phaseId) {
+          const items = phaseTasks(phaseId);
+          return items.filter((t) => t.done).length;
+        }
+
+        function phasePct(phaseId) {
+          const items = phaseTasks(phaseId);
+          if (!items.length) return 0;
+          return Math.round((phaseDoneCount(phaseId) / items.length) * 100);
+        }
+
+        function overallPct() {
+          const total = sumTasks(state.tasks);
+          if (!total) return 0;
+          return Math.round((sumDone(state.tasks) / total) * 100);
+        }
+
+        function pad2(n) {
+          return String(n).padStart(2, "0");
+        }
+
+        function phaseIcon(phase) {
+          if (phase.status === STATUS.done) return "✓";
+          if (phase.status === STATUS.active) return "◉";
+          return "○";
+        }
+
+        function phaseIconColor(phase) {
+          if (phase.status === STATUS.done) return "#6fcf6f";
+          if (phase.status === STATUS.active) return P.gold;
+          return P.muted;
+        }
+
+        function renderSidebarPhaseButton(phase) {
+          const isSelected = state.activeTab === "phases" && state.selectedPhaseId === phase.id;
+          const isDone = phase.status === STATUS.done;
+          const isActive = phase.status === STATUS.active;
+
+          const bg = isSelected ? phase.color : isDone ? "#2a3a2a" : isActive ? P.midPlum : "#221530";
+          const border = isSelected ? phase.color : isDone ? phase.color : isActive ? P.gold : P.litePlum;
+          const tc = isSelected || isDone ? P.cream : isActive ? P.goldLite : P.muted;
+
+          const pct = Math.max(phase.pct || 0, phasePct(phase.id));
+
+          return `
+            <button class="ad-phase-btn" type="button" data-phase="${phase.id}" style="background:${bg}; border:1px solid ${border}; color:${tc};">
+              <span style="font-size:13px; width:18px; color:${phaseIconColor(phase)};">${phaseIcon(phase)}</span>
+              <div style="flex:1;">
+                <div style="font-weight:${isActive ? "bold" : "normal"};">${pad2(phase.id)}  ${phase.name}</div>
+                ${pct > 0 ? `<div class="ad-phase-progress"><div style="width:${pct}%; height:100%; background:${phase.color}; border-radius:2px;"></div></div>` : ""}
+              </div>
+            </button>
+          `;
+        }
+
+        function template() {
+          const wordsPct = Math.round((PROJECT.wordsWritten / PROJECT.targetWords) * 100);
+          return `
+            <div>
+              <div class="ad-topbar">
+                <div>
+                  <div style="display:flex; align-items:baseline; gap:12px;">
+                    <h1>${PROJECT.title}</h1>
+                    <span style="font-size:12px; color:${P.muted}; font-style:italic;">${PROJECT.genre}</span>
+                  </div>
+                  <div class="ad-topbar-meta">${PROJECT.author} · Started ${PROJECT.startDate} · Target ${PROJECT.targetDate}</div>
+                </div>
+                <div class="ad-topbar-right">
+                  <div style="text-align:right;">
+                    <div id="ad-overall" style="font-size:18px; font-weight:bold; color:${P.gold}; font-family: Georgia, serif;">${overallPct()}%</div>
+                    <div style="font-size:10px; color:${P.muted};">overall</div>
+                  </div>
+                  <div class="ad-avatar">MD</div>
+                </div>
+              </div>
+
+              <div class="ad-body">
+                <div class="ad-sidebar">
+                  <div class="ad-sidebar-label">PHASES</div>
+                  <div id="ad-phase-list">${PHASES.map(renderSidebarPhaseButton).join("")}</div>
+
+                  <div style="margin-top:20px; border-top:1px solid rgba(123,82,153,0.27); padding-top:16px;">
+                    <div class="ad-sidebar-label">MANUSCRIPT</div>
+                    <div style="font-size:12px; color:${P.text}; margin-bottom:6px;"><span style="color:${P.gold}; font-weight:bold;">${(PROJECT.wordsWritten / 1000).toFixed(1)}k</span> / ${PROJECT.targetWords / 1000}k words</div>
+                    <div style="height:5px; background:#3a2a4a; border-radius:3px;"><div style="width:${wordsPct}%; height:100%; background:${P.gold}; border-radius:3px;"></div></div>
+                    <div style="font-size:11px; color:${P.muted}; margin-top:8px;"><span style="color:#8C3A00;">Scene ${PROJECT.scenes.complete}</span> / ${PROJECT.scenes.total}</div>
+                  </div>
+                </div>
+
+                <div class="ad-main">
+                  <div class="ad-tabs">
+                    <button class="ad-tab-btn" type="button" data-tab="overview">Overview</button>
+                    <button class="ad-tab-btn" type="button" data-tab="phases">Phases</button>
+                    <button class="ad-tab-btn" type="button" data-tab="analytics">Analytics</button>
+                  </div>
+
+                  <div id="ad-tab-overview"></div>
+                  <div id="ad-tab-phases"></div>
+                  <div id="ad-tab-analytics"></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function setActiveTab(tabId) {
+          state.activeTab = tabId;
+          renderTabs();
+        }
+
+        function setSelectedPhase(phaseId) {
+          state.selectedPhaseId = Number(phaseId);
+          renderSidebar();
+          renderPhasesTab();
+        }
+
+        function renderTabs() {
+          const tabs = $all('.ad-tab-btn');
+          tabs.forEach((btn) => {
+            const id = btn.dataset.tab;
+            const isActive = id === state.activeTab;
+            btn.style.background = isActive ? P.gold : 'transparent';
+            btn.style.color = isActive ? P.dark : P.muted;
+            btn.style.fontWeight = isActive ? 'bold' : 'normal';
+          });
+
+          const overview = $('#ad-tab-overview');
+          const phases = $('#ad-tab-phases');
+          const analytics = $('#ad-tab-analytics');
+
+          if (overview) overview.style.display = state.activeTab === 'overview' ? 'block' : 'none';
+          if (phases) phases.style.display = state.activeTab === 'phases' ? 'block' : 'none';
+          if (analytics) analytics.style.display = state.activeTab === 'analytics' ? 'block' : 'none';
+        }
+
+        function renderSidebar() {
+          const list = $('#ad-phase-list');
+          if (!list) return;
+          list.innerHTML = PHASES.map(renderSidebarPhaseButton).join('');
+        }
+
+        function renderPhasesTab() {
+          const container = $('#ad-tab-phases');
+          if (!container) return;
+
+          const phase = PHASES.find((p) => p.id === state.selectedPhaseId) || PHASES[0];
+          const items = phaseTasks(phase.id);
+          const doneCount = phaseDoneCount(phase.id);
+          const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
+
+          const tasksHtml = items
+            .map((task) => {
+              const isDone = !!task.done;
+              return `
+                <div class="ad-task-item" data-task="${task.id}" style="background:${isDone ? '#1e3a1e' : P.midPlum}; border:1px solid ${isDone ? '#2d5a2d' : '#5a3a7a'};">
+                  <span style="font-size:16px; margin-top:1px; color:${isDone ? '#6fcf6f' : P.muted}; flex-shrink:0;">${isDone ? '✓' : '○'}</span>
+                  <span style="font-size:13px; color:${isDone ? '#a0c8a0' : P.text}; text-decoration:${isDone ? 'line-through' : 'none'}; line-height:1.5;">${task.text}</span>
+                </div>
+              `;
+            })
+            .join('');
+
+          container.innerHTML = `
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <h3 style="color:${phase.color}; font-family:Georgia,serif; font-size:18px; margin:0;">${pad2(phase.id)} — ${phase.name}</h3>
+                <span style="font-size:12px; color:${P.muted};">${doneCount}/${items.length} complete</span>
+              </div>
+              <div style="height:4px; background:#3a2a4a; border-radius:2px; margin-bottom:20px;">
+                <div style="width:${pct}%; height:100%; background:${phase.color}; border-radius:2px; transition:width 0.25s;"></div>
+              </div>
+              ${tasksHtml}
+            </div>
+          `;
+
+          // wire task toggles
+          $all('.ad-task-item', container).forEach((node) => {
+            node.addEventListener('click', () => {
+              const taskId = node.getAttribute('data-task');
+              const list = phaseTasks(phase.id);
+              const idx = list.findIndex((t) => t.id === taskId);
+              if (idx === -1) return;
+              list[idx].done = !list[idx].done;
+              renderPhasesTab();
+              renderOverviewTab();
+              renderTopbar();
+              renderSidebar();
+            });
+          });
+        }
+
+        function renderTopbar() {
+          const overall = $('#ad-overall');
+          if (overall) overall.textContent = `${overallPct()}%`;
+        }
+
+        function donutSvg(percent, size, stroke, fg, bg) {
+          const r = (size - stroke) / 2;
+          const c = 2 * Math.PI * r;
+          const dash = (percent / 100) * c;
+          return `
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true" style="display:block; margin: 0 auto;">
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${bg}" stroke-width="${stroke}" />
+              <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${fg}" stroke-width="${stroke}" stroke-linecap="round"
+                stroke-dasharray="${dash} ${c - dash}" transform="rotate(-90 ${size / 2} ${size / 2})" />
+            </svg>
+          `;
+        }
+
+        function renderOverviewTab() {
+          const container = $('#ad-tab-overview');
+          if (!container) return;
+
+          const total = sumTasks(state.tasks);
+          const done = sumDone(state.tasks);
+          const pct = total ? Math.round((done / total) * 100) : 0;
+          const wordPct = Math.round((PROJECT.wordsWritten / PROJECT.targetWords) * 100);
+
+          const currentPhase = PHASES.find((p) => p.status === STATUS.active) || PHASES[0];
+
+          container.innerHTML = `
+            <div>
+              <div class="ad-logline-card">
+                <div style="font-size:10px; color:${P.muted}; margin-bottom:6px; letter-spacing:1px;">LOGLINE</div>
+                <div style="font-size:13px; color:${P.goldLite}; font-family:Georgia,serif; font-style:italic; line-height:1.6;">“${PROJECT.logline}”</div>
+              </div>
+
+              <div class="ad-stats-row">
+                <div class="ad-stat-card" style="border:1px solid ${P.gold};">
+                  <div class="ad-stat-value" style="color:${P.gold};">${(PROJECT.wordsWritten / 1000).toFixed(1)}k</div>
+                  <div class="ad-stat-label">Words Written</div>
+                  <div class="ad-stat-sub">of ${PROJECT.targetWords / 1000}k (${wordPct}%)</div>
+                </div>
+                <div class="ad-stat-card" style="border:1px solid #8C3A00;">
+                  <div class="ad-stat-value" style="color:#8C3A00;">${PROJECT.scenes.complete}</div>
+                  <div class="ad-stat-label">Scenes Drafted</div>
+                  <div class="ad-stat-sub">of ${PROJECT.scenes.total} total</div>
+                </div>
+                <div class="ad-stat-card" style="border:1px solid ${P.litePlum};">
+                  <div class="ad-stat-value" style="color:${P.litePlum};">${done}</div>
+                  <div class="ad-stat-label">Tasks Complete</div>
+                  <div class="ad-stat-sub">of ${total} total</div>
+                </div>
+                <div class="ad-stat-card" style="border:1px solid ${currentPhase.color};">
+                  <div class="ad-stat-value" style="color:${currentPhase.color};">${pad2(currentPhase.id)}</div>
+                  <div class="ad-stat-label">Current Phase</div>
+                  <div class="ad-stat-sub">${currentPhase.name} — ${Math.max(currentPhase.pct || 0, phasePct(currentPhase.id))}%</div>
+                </div>
+              </div>
+
+              <div class="ad-grid-2col">
+                <div class="ad-card">
+                  <div class="ad-card-label">OVERALL PROGRESS</div>
+                  <div style="padding-top:6px;">${donutSvg(pct, 160, 14, P.gold, '#3a2a4a')}</div>
+                  <div style="text-align:center; margin-top:-8px;">
+                    <span style="font-size:22px; font-weight:bold; color:${P.gold}; font-family:Georgia,serif;">${pct}%</span>
+                    <div style="font-size:10px; color:${P.muted};">tasks done</div>
+                  </div>
+                </div>
+
+                <div class="ad-card">
+                  <div class="ad-card-label">TASKS BY PHASE</div>
+                  <div style="display:grid; gap:10px; margin-top:12px;">
+                    ${PHASES.map((ph) => {
+                      const total = phaseTasks(ph.id).length;
+                      const done = phaseDoneCount(ph.id);
+                      const pct = total ? Math.round((done / total) * 100) : 0;
+                      return `
+                        <div style="display:grid; grid-template-columns: 90px 1fr 44px; gap:10px; align-items:center;">
+                          <div style="font-size:11px; color:${P.muted};">${pad2(ph.id)}</div>
+                          <div style="height:8px; background:#3a2a4a; border-radius:999px; overflow:hidden;">
+                            <div style="width:${pct}%; height:100%; background:${P.gold};"></div>
+                          </div>
+                          <div style="font-size:11px; color:${P.muted}; text-align:right;">${done}/${total}</div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="ad-card">
+                <div class="ad-card-label">PHASE TIMELINE</div>
+                <div class="ad-timeline">
+                  ${PHASES.map((ph) => {
+                    const isDone = ph.status === STATUS.done;
+                    const isActive = ph.status === STATUS.active;
+                    const activePct = Math.max(ph.pct || 0, phasePct(ph.id));
+                    const base = isDone ? ph.color : isActive ? ph.color + '88' : '#3a2a4a';
+                    return `
+                      <div style="flex:1; position:relative;">
+                        <div class="ad-timeline-bar" style="background:${base};">
+                          ${isActive ? `<div style="position:absolute; left:0; top:0; bottom:0; width:${activePct}%; background:${ph.color};"></div>` : ''}
+                          <div class="ad-timeline-num">${ph.id}</div>
+                        </div>
+                        <div class="ad-timeline-label">${ph.name.split(' ')[0]}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function renderAnalyticsTab() {
+          const container = $('#ad-tab-analytics');
+          if (!container) return;
+          const wordsPct = Math.round((PROJECT.wordsWritten / PROJECT.targetWords) * 100);
+          container.innerHTML = `
+            <div>
+              <h3 style="color:${P.gold}; font-family:Georgia,serif; margin-top:0; margin-bottom:20px;">Project Analytics</h3>
+              <div class="ad-grid-analytics">
+                <div class="ad-card" style="padding:20px;">
+                  <div class="ad-card-label">MANUSCRIPT PROGRESS</div>
+                  <div style="padding-top:10px;">${donutSvg(wordsPct, 160, 14, P.gold, '#3a2a4a')}</div>
+                  <div style="text-align:center; margin-top:-8px;">
+                    <span style="font-size:24px; font-weight:bold; color:${P.gold}; font-family:Georgia,serif;">${wordsPct}%</span>
+                    <div style="font-size:10px; color:${P.muted};">of target word count</div>
+                    <div style="font-size:12px; color:${P.text}; margin-top:4px;">${(PROJECT.targetWords - PROJECT.wordsWritten).toLocaleString()} words remaining</div>
+                  </div>
+                </div>
+
+                <div class="ad-card" style="padding:20px;">
+                  <div class="ad-card-label">PHASE COMPLETION</div>
+                  <div style="display:grid; gap:10px; margin-top:12px;">
+                    ${PHASES.map((ph) => {
+                      const pct = Math.max(ph.pct || 0, phasePct(ph.id));
+                      return `
+                        <div style="display:grid; grid-template-columns: 140px 1fr 40px; gap:10px; align-items:center;">
+                          <div style="font-size:11px; color:${P.muted}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${pad2(ph.id)} ${ph.name}</div>
+                          <div style="height:8px; background:#3a2a4a; border-radius:999px; overflow:hidden;">
+                            <div style="width:${pct}%; height:100%; background:${P.gold};"></div>
+                          </div>
+                          <div style="font-size:11px; color:${P.muted}; text-align:right;">${pct}%</div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        function wireEvents() {
+          $all('.ad-tab-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              setActiveTab(btn.dataset.tab);
+              if (btn.dataset.tab === 'phases') {
+                renderSidebar();
+                renderPhasesTab();
+              }
+            });
+          });
+
+          const phaseList = $('#ad-phase-list');
+          if (phaseList) {
+            phaseList.addEventListener('click', (event) => {
+              const button = event.target.closest('button[data-phase]');
+              if (!button) return;
+              const phaseId = Number(button.getAttribute('data-phase'));
+              state.selectedPhaseId = phaseId;
+              setActiveTab('phases');
+              setSelectedPhase(phaseId);
+            });
+          }
+        }
+
+        function init() {
+          const root = document.getElementById('ad-root');
+          if (!root) return;
+
+          // Replace fallback snapshot with interactive app when JS is allowed.
+          root.innerHTML = template();
+
+          wireEvents();
+          renderSidebar();
+          renderOverviewTab();
+          renderAnalyticsTab();
+          renderPhasesTab();
+          renderTopbar();
+          renderTabs();
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init, { once: true });
+        } else {
+          init();
+        }
+      })();
+    </script>
+</body>
+</html>
