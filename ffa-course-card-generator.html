@@ -176,7 +176,7 @@
   .ffa-card-image {
     background: #E1F5EE;
     border-radius: 8px;
-    min-height: 340px;
+    min-height: 300px;
     background-size: cover;
     background-position: center;
     display: flex;
@@ -248,15 +248,21 @@
   .ffa-card-learn-label {
     font-size: 11px;
     color: #666;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     letter-spacing: 0.06em;
   }
   .ffa-card-learn {
     font-size: 13px;
-    margin: 0 0 18px;
+    margin: 0 0 14px;
     padding-left: 16px;
-    line-height: 1.7;
+    line-height: 1.38;
     color: #333;
+  }
+  .ffa-card-learn li {
+    margin: 0 0 2px;
+  }
+  .ffa-card-learn li:last-child {
+    margin-bottom: 0;
   }
   .ffa-card-cta-wrap {
     margin-top: auto;
@@ -446,15 +452,15 @@ function buildCardHTML() {
     </div>`;
 
   const bulletsHTML = bullets.length
-    ? `<div style="font-size:11px; color:#666; margin-bottom:6px; letter-spacing:0.06em;">YOU'LL LEARN</div>
-       <ul style="font-size:13px; margin:0 0 18px; padding-left:16px; line-height:1.7; color:#333;">
-         ${bullets.map(b => `<li>${escHtml(b)}</li>`).join("\n         ")}
+    ? `<div style="font-size:11px; color:#666; margin-bottom:4px; letter-spacing:0.06em;">YOU'LL LEARN</div>
+       <ul style="font-size:13px; margin:0 0 14px; padding-left:16px; line-height:1.38; color:#333;">
+         ${bullets.map((b, i) => `<li style="margin:0 0 ${i < bullets.length - 1 ? "2px" : "0"};">${escHtml(b)}</li>`).join("\n         ")}
        </ul>`
     : "";
 
   return `<a href="${escAttr(link)}" style="display:block; width:100%; box-sizing:border-box; text-decoration:none; color:inherit; margin:0;">
   <div style="background:#FFFFFF; border:1px solid rgba(0,0,0,0.1); border-radius:12px; padding:1.25rem; display:grid; grid-template-columns:200px 1fr; gap:1.5rem;">
-    <div style="background:#E1F5EE; border-radius:8px; min-height:340px; ${imageStyle} display:flex; align-items:center; justify-content:center; color:#085041; font-style:italic; font-size:13px;">${imagePlaceholder}</div>
+    <div style="background:#E1F5EE; border-radius:8px; min-height:300px; ${imageStyle} display:flex; align-items:center; justify-content:center; color:#085041; font-style:italic; font-size:13px;">${imagePlaceholder}</div>
     <div style="display:flex; flex-direction:column; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
       ${tagsHTML}
       <h3 style="font-size:19px; font-weight:500; margin:0 0 10px; line-height:1.3; color:#1A1A1A;">${title}</h3>
