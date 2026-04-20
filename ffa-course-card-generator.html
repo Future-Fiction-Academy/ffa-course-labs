@@ -482,10 +482,14 @@ function refresh() {
   document.getElementById("output").value = html;
 }
 
-// Attach listeners to every input
-document.querySelectorAll("input, textarea").forEach(el => {
+// Attach listeners to form fields (not the readonly embed output).
+// `input` alone misses some cases (e.g. blur after paste/autofill); `change` catches blur commits.
+function bindFormRefresh(el) {
   el.addEventListener("input", refresh);
-});
+  el.addEventListener("change", refresh);
+  el.addEventListener("paste", () => queueMicrotask(refresh));
+}
+document.querySelectorAll("input:not(#output), textarea:not(#output)").forEach(bindFormRefresh);
 
 // Copy button
 document.getElementById("btn-copy").addEventListener("click", () => {
